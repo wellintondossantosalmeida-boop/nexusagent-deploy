@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexusAgent AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#6366f1;--primary-dark:#4f46e5;--bg:#0a0e1a;--bg2:#111827;--card:#1e293b;--text:#f1f5f9;--muted:#94a3b8;--border:#334155;--success:#22c55e;--error:#ef4444;--warning:#f59e0b;--info:#3b82f6;--radius:12px}
+html.light{--bg:#f8fafc;--bg2:#f1f5f9;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:var(--primary);text-decoration:none}
+.auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+.auth-card{background:var(--card);border-radius:var(--radius);padding:2rem;width:100%;max-width:400px;border:1px solid var(--border)}
+.auth-card h1{text-align:center;font-size:1.8rem;background:linear-gradient(135deg,var(--primary),#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.5rem}
+.auth-card .subtitle{text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:1.5rem}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;color:var(--muted);font-size:.8rem;margin-bottom:.3rem}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:.7rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem}
+.form-group textarea{min-height:80px;resize:vertical;font-family:monospace}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--primary)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.7rem 1.2rem;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn:hover{background:var(--primary-dark)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-sm{padding:.4rem .8rem;font-size:.8rem}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{background:var(--error)}
+.btn-success{background:var(--error)}
+.btn-full{width:100%}
+.btn-group{display:flex;gap:.5rem;flex-wrap:wrap}
+.error-msg{color:var(--error);font-size:.8rem;margin-top:.3rem}
+.success-msg{color:var(--success);font-size:.8rem;margin-top:.3rem}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);padding:1rem 0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s}
+.sidebar .logo{padding:0 1rem;margin-bottom:1.5rem}
+.sidebar .logo h2{font-size:1.2rem;background:linear-gradient(135deg,var(--primary),#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sidebar .logo p{font-size:.7rem;color:var(--muted)}
+.sidebar nav{flex:1;overflow-y:auto}
+.sidebar nav a{display:flex;align-items:center;gap:.7rem;padding:.6rem 1rem;color:var(--muted);font-size:.85rem;transition:all .2s;border-left:3px solid transparent}
+.sidebar nav a:hover,.sidebar nav a.active{background:var(--card);color:var(--text);border-left-color:var(--primary)}
+.sidebar nav a .icon{width:18px;text-align:center;font-size:1rem}
+.sidebar .badge{background:var(--error);color:#fff;font-size:.65rem;padding:.1rem .4rem;border-radius:10px;margin-left:auto}
+.sidebar .user-info{padding:1rem;border-top:1px solid var(--border);font-size:.8rem;color:var(--muted)}
+.sidebar .user-info strong{color:var(--text);display:block}
+.main{flex:1;margin-left:240px;padding:1.5rem;min-height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
+.topbar h1{font-size:1.4rem}
+.topbar-actions{display:flex;gap:.5rem;align-items:center}
+.hamburger{display:none;background:none;border:none;color:var(--text);font-size:1.5rem;cursor:pointer}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem}
+.card h3{font-size:1rem;margin-bottom:.8rem}
+.grid{display:grid;gap:1rem}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center}
+.stat-card .stat-value{font-size:1.8rem;font-weight:700;color:var(--primary)}
+.stat-card .stat-label{font-size:.75rem;color:var(--muted);margin-top:.2rem}
+.stat-card.success .stat-value{color:var(--success)}
+.stat-card.error .stat-value{color:var(--error)}
+.stat-card.info .stat-value{color:var(--info)}
+.task-type-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.7rem}
+.task-type-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:.8rem;cursor:pointer;text-align:center;transition:all .2s;font-size:.8rem}
+.task-type-card:hover,.task-type-card.active{border-color:var(--primary);background:rgba(99,102,241,.1)}
+.task-type-card .tt-icon{font-size:1.5rem;margin-bottom:.3rem}
+.provider-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;display:flex;align-items:center;gap:1rem}
+.provider-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.provider-dot.on{background:var(--success)}
+.provider-dot.off{background:var(--error)}
+.provider-dot.cooling{background:var(--warning)}
+.provider-info{flex:1}
+.provider-info h4{font-size:.9rem}
+.provider-info p{font-size:.75rem;color:var(--muted)}
+.result-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-top:1rem;font-family:monospace;font-size:.85rem;white-space:pre-wrap;max-height:500px;overflow-y:auto;line-height:1.5}
+.result-box.streaming{border-color:var(--primary)}
+.loading{display:flex;align-items:center;justify-content:center;padding:2rem;color:var(--muted)}
+.spinner{width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite;margin-right:.5rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin:1rem 0}
+.progress-bar .fill{height:100%;background:var(--primary);transition:width .3s;border-radius:2px}
+.toast-container{position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem}
+.toast{padding:.8rem 1.2rem;border-radius:8px;font-size:.85rem;color:#fff;animation:slideIn .3s;max-width:350px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--error)}
+.toast.info{background:var(--info)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.show{opacity:1;pointer-events:auto}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;width:100%;max-width:500px;max-height:80vh;overflow-y:auto}
+.modal h3{margin-bottom:1rem}
+.modal-close{float:right;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{text-align:left;padding:.6rem;border-bottom:2px solid var(--border);color:var(--muted);font-size:.75rem;text-transform:uppercase}
+td{padding:.6rem;border-bottom:1px solid var(--border)}
+.tag{display:inline-block;padding:.15rem .5rem;border-radius:4px;font-size:.7rem;font-weight:600}
+.tag-success{background:rgba(34,197,94,.15);color:var(--success)}
+.tag-error{background:rgba(239,68,68,.15);color:var(--error)}
+.tag-info{background:rgba(59,130,246,.15);color:var(--info)}
+.tag-warning{background:rgba(245,158,11,.15);color:var(--warning)}
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:2rem;text-align:center;color:var(--muted);cursor:pointer;transition:all .2s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--primary);color:var(--primary)}
+.terminal-output{background:#000;color:#0f0;font-family:monospace;font-size:.8rem;padding:1rem;border-radius:8px;max-height:400px;overflow-y:auto;white-space:pre-wrap}
+.file-list{max-height:300px;overflow-y:auto}
+.file-item{display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;border-radius:6px;cursor:pointer;font-size:.85rem}
+.file-item:hover{background:var(--bg)}
+.file-item.dir{color:var(--info);font-weight:600}
+.version-badge{background:var(--primary);color:#fff;font-size:.65rem;padding:.1rem .4rem;border-radius:4px;margin-left:.5rem}
+.tab-bar{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:1rem}
+.tab-btn{padding:.6rem 1rem;background:none;border:none;color:var(--muted);font-size:.85rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+.empty-state{text-align:center;padding:3rem;color:var(--muted)}
+.empty-state .icon{font-size:3rem;margin-bottom:1rem;display:block}
+.flex{display:flex}.flex-col{flex-direction:column}.gap-1{gap:1rem}.gap-05{gap:.5rem}.items-center{align-items:center}.justify-between{justify-content:space-between}.flex-wrap{flex-wrap:wrap}
+.mt-1{margin-top:1rem}.mb-1{margin-bottom:1rem}.text-sm{font-size:.8rem}.text-muted{color:var(--muted)}
+@media(max-width:768px){
+.sidebar{transform:translateX(-100%)}
+.sidebar.open{transform:translateX(0)}
+.main{margin-left:0}
+.hamburger{display:block}
+.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
+.task-type-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+}
+</style>
+</head>
+<body>
+<div id="toastContainer" class="toast-container"></div>
+<div id="modalOverlay" class="modal-overlay" onclick="if(event.target===this)closeModal()"></div>
+<div id="authPage" class="auth-page">
+<div class="auth-card">
+<h1>NexusAgent AI</h1>
+<p class="subtitle">Agente Autônomo v3.0</p>
+<div id="authError" class="error-msg" style="display:none;text-align:center;margin-bottom:1rem"></div>
+<div id="loginForm">
+<div class="form-group"><label>Usuário</label><input id="loginUser" placeholder="admin"></div>
+<div class="form-group"><label>Senha</label><input id="loginPass" type="password" placeholder="••••••"></div>
+<button class="btn btn-full" onclick="doLogin()">Entrar</button>
+<p class="text-sm text-muted" style="text-align:center;margin-top:1rem;cursor:pointer" onclick="toggleAuth()">Criar conta</p>
+</div>
+<div id="registerForm" style="display:none">
+<div class="form-group"><label>Usuário</label><input id="regUser" placeholder="mínimo 3 caracteres"></div>
+<div class="form-group"><label>Email</label><input id="regEmail" type="email"></div>
+<div class="form-group"><label>Nome</label><input id="regName" placeholder="Opcional"></div>
+<div class="form-group"><label>Senha</label><input id="regPass" type="password" placeholder="mínimo 6 caracteres"></div>
+<button class="btn btn-full" onclick="doRegister()">Criar Conta</button>
+<p class="text-sm text-muted" style="text-align:center;margin-top:1rem;cursor:pointer" onclick="toggleAuth()">Já tenho conta</p>
+</div>
+</div>
+</div>
+
+<div id="appPage" class="layout" style="display:none">
+<aside class="sidebar" id="sidebar">
+<div class="logo"><h2>NexusAgent AI</h2><p>v3.0 — Agente Autônomo</p></div>
+<nav>
+<a href="#" data-page="dashboard" class="active" onclick="go('dashboard')"><span class="icon">📊</span>Dashboard</a>
+<a href="#" data-page="tasks" onclick="go('tasks')"><span class="icon">🚀</span>Nova Tarefa</a>
+<a href="#" data-page="history" onclick="go('history')"><span class="icon">📋</span>Histórico</a>
+<a href="#" data-page="terminal" onclick="go('terminal')"><span class="icon">💻</span>Terminal</a>
+<a href="#" data-page="sandbox" onclick="go('sandbox')"><span class="icon">🧪</span>Sandbox</a>
+<a href="#" data-page="browser" onclick="go('browser')"><span class="icon">🌐</span>Browser</a>
+<a href="#" data-page="projects" onclick="go('projects')"><span class="icon">📁</span>Projetos</a>
+<a href="#" data-page="providers" onclick="go('providers')"><span class="icon">🤖</span>Provedores IA</a>
+<a href="#" data-page="workflows" onclick="go('workflows')"><span class="icon">⚙️</span>Workflows</a>
+<a href="#" data-page="prompts" onclick="go('prompts')"><span class="icon">📝</span>System Prompts</a>
+<a href="#" data-page="deployments" onclick="go('deployments')"><span class="icon">☁️</span>Deploys</a>
+<a href="#" data-page="dbops" onclick="go('dbops')"><span class="icon">🗄️</span>Banco de Dados</a>
+<a href="#" data-page="notifications" onclick="go('notifications')"><span class="icon">🔔</span>Notificações<span id="notifBadge" class="badge" style="display:none">0</span></a>
+<a href="#" data-page="monitoring" onclick="go('monitoring')"><span class="icon">📈</span>Monitoramento</a>
+<a href="#" data-page="admin" onclick="go('admin')" id="adminLink" style="display:none;border-left-color:var(--error)"><span class="icon">🛡️</span>Painel Admin<span class="badge" style="background:var(--error)">ADMIN</span></a>
+<a href="#" data-page="settings" onclick="go('settings')"><span class="icon">⚙️</span>Configurações</a>
+</nav>
+<div class="user-info"><strong id="userName">-</strong><span id="userEmail">-</span></div>
+</aside>
+<main class="main" id="mainContent">
+<button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+<div id="pageContent"></div>
+</main>
+</div>
+
+<script>
+let currentPage='',token='',userData=null,streaming=false,lastResult='';
+function getToken(){return localStorage.getItem('nexus_token')||''}
+function setToken(t){localStorage.setItem('nexus_token',t);token=t}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function showAuthError(m){const e=document.getElementById('authError');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',5000)}
+function toast(msg,type='info'){const c=document.getElementById('toastContainer');const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),4000)}
+function toggleAuth(){const l=document.getElementById('loginForm'),r=document.getElementById('registerForm');l.style.display=l.style.display==='none'?'block':'none';r.style.display=r.style.display==='none'?'block':'none'}
+async function api(url,opts={}){
+try{const r=await fetch(url,{headers:{'Authorization':'Bearer '+getToken(),'Content-Type':'application/json'},...opts});
+if(r.status===401){localStorage.removeItem('nexus_token');location.reload();return null}
+const text=await r.text();try{return JSON.parse(text)}catch(e){return{error:res||'Resposta inválida'}}
+}catch(e){toast('Erro de conexão','error');return{error:e.message}}
+}
+async function doLogin(){
+const u=document.getElementById('loginUser').value.trim(),p=document.getElementById('loginPass').value;
+if(!u||!p){showAuthError('Preencha todos os campos');return}
+try{const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+const d=await r.json();if(!r.ok)throw new Error(d.detail);setToken(d.access_token);location.reload()}
+catch(e){showAuthError(e.message)}
+}
+async function doRegister(){
+const u=document.getElementById('regUser').value.trim(),e=document.getElementById('regEmail').value.trim(),p=document.getElementById('regPass').value,n=document.getElementById('regName').value.trim();
+if(!u||!e||!p){showAuthError('Preencha todos os campos');return}
+if(u.length<3){showAuthError('Usuário: mínimo 3 caracteres');return}
+if(!e.includes('@')){showAuthError('Email inválido');return}
+if(p.length<6){showAuthError('Senha: mínimo 6 caracteres');return}
+try{const r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,email:e,password:p,full_name:n})});
+const d=await r.json();if(!r.ok)throw new Error(d.detail);setToken(d.access_token);location.reload()}
+catch(e){showAuthError(e.message)}
+}
+function go(page){
+currentPage=page;document.querySelectorAll('.sidebar nav a').forEach(a=>a.classList.toggle('active',a.dataset.page===page));
+document.getElementById('sidebar').classList.remove('open');
+renderPage(page);
+}
+function renderPage(page){
+const c=document.getElementById('pageContent');
+const pages={dashboard:renderDashboard,tasks:renderTasks,history:renderHistory,terminal:renderTerminal,sandbox:renderSandbox,browser:renderBrowser,projects:renderProjects,providers:renderProviders,workflows:renderWorkflows,prompts:renderPrompts,deployments:renderDeployments,dbops:renderDBOps,notifications:renderNotifications,monitoring:renderMonitoring,admin:renderAdmin,settings:renderSettings};
+if(pages[page])pages[page](c);else c.innerHTML='<div class="empty-state"><span class="icon">🔍</span><p>Página não encontrada</p></div>';
+}
+
+function renderDashboard(c){
+c.innerHTML=`<div class="topbar"><h1>Dashboard</h1></div><div class="grid grid-4" id="dashStats"><div class="loading"><div class="spinner"></div>Carregando...</div></div><div class="card mt-1"><h3>Ações Rápidas</h3><div class="grid grid-3" style="margin-top:.8rem"><button class="btn btn-outline" onclick="go('tasks')">🚀 Nova Tarefa</button><button class="btn btn-outline" onclick="go('terminal')">💻 Terminal</button><button class="btn btn-outline" onclick="go('sandbox')">🧪 Sandbox</button></div></div><div class="card mt-1"><h3>Tarefas Recentes</h3><div id="recentTasks"><div class="loading"><div class="spinner"></div></div></div></div>`;
+loadDashStats();loadRecentTasks();
+}
+async function loadDashStats(){
+const d=await api('/api/stats');
+if(!d||d.error)return;
+document.getElementById('dashStats').innerHTML=`
+<div class="stat-card"><div class="stat-value">${d.total_tasks||0}</div><div class="stat-label">Total Tarefas</div></div>
+<div class="stat-card success"><div class="stat-value">${d.completed_tasks||0}</div><div class="stat-label">Concluídas</div></div>
+<div class="stat-card info"><div class="stat-value">${d.total_tokens||0}</div><div class="stat-label">Tokens Usados</div></div>
+<div class="stat-card"><div class="stat-value">${d.users||1}</div><div class="stat-label">Usuários</div></div>`;
+}
+async function loadRecentTasks(){
+const d=await api('/api/tasks/history?limit=5');
+const el=document.getElementById('recentTasks');
+if(!d||!d.tasks||!d.tasks.length){el.innerHTML='<p class="text-muted text-sm">Nenhuma tarefa ainda</p>';return}
+el.innerHTML=d.tasks.map(t=>`<div style="padding:.5rem 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><div><strong>${esc(t.title)}</strong><span class="text-muted text-sm"> — ${esc(t.task_type)}</span></div><span class="tag tag-${t.status==='completed'?'success':t.status==='failed'?'error':'info'}">${t.status}</span></div>`).join('');
+}
+
+function renderTasks(c){
+c.innerHTML=`<div class="topbar"><h1>Nova Tarefa</h1></div>
+<div class="card"><h3>Tipo de Tarefa</h3><div class="task-type-grid" id="ttGrid"></div></div>
+<div class="card"><h3>Descrição</h3>
+<div class="form-group"><textarea id="taskDesc" rows="4" placeholder="Descreva o que você precisa..."></textarea></div>
+<div class="form-group"><label>Sistema de Prompt</label><select id="taskPrompt"><option value="">Prompt padrão</option></select></div>
+<div class="form-group"><label>Provedor IA</label><div class="flex gap-05"><select id="taskProvider" style="flex:1"><option value="">Automático (melhor provedor)</option><option value="ollama_local">🔒 Ollama Local (sem filtros)</option><option value="novita">🔓 Novita AI (poucos filtros)</option><option value="groq">⚡ Groq (rápido)</option><option value="google_gemini">🧠 Google Gemini</option><option value="openrouter">🌐 OpenRouter</option><option value="huggingface">🤗 Hugging Face</option></select><button class="btn btn-sm" onclick="document.getElementById('taskProvider').value='ollama_local'" title="Forçar Ollama">🔓 Sem Filtro</button></div></div>
+<div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()"><p>📎 Arraste ou clique para adicionar arquivos (max 500MB)</p><input type="file" id="fileInput" multiple style="display:none" onchange="handleFiles(this.files)"></div>
+<div id="fileList" class="mt-1"></div>
+<div class="flex justify-between items-center mt-1"><button class="btn" id="runBtn" onclick="runTask()">▶ Executar</button><span id="taskProgress" class="text-sm text-muted"></span></div></div>
+<div class="progress-bar" id="progressBar" style="display:none"><div class="fill" id="progressFill" style="width:0%"></div></div>
+<div id="taskResult"></div>`;
+loadTaskTypes();loadPromptSelect();
+setupUploadZone();
+}
+let selectedType='general_task',selectedFiles=[];
+function loadTaskTypes(){
+fetch('/api/tasks/task-types').then(r=>r.json()).then(d=>{
+document.getElementById('ttGrid').innerHTML=d.types.map(t=>`<div class="task-type-card${t.id===selectedType?' active':''}" onclick="selectType('${t.id}',this)"><div class="tt-icon">${t.icon==='code'?'💻':t.icon==='search'?'🔍':t.icon==='globe'?'🌐':t.icon==='smartphone'?'📱':t.icon==='android'?'🤖':t.icon==='file'?'📄':t.icon==='database'?'🗄️':t.icon==='refresh'?'🔄':t.icon==='bug'?'🐛':t.icon==='link'?'🔗':t.icon==='server'?'🖥️':t.icon==='book'?'📚':t.icon==='check'?'✅':t.icon==='cloud'?'☁️':t.icon==='zap'?'⚡':t.icon==='shield'?'🛡️':t.icon==='palette'?'🎨':'⚡'}</div><div>${esc(t.name)}</div></div>`).join('');
+});
+}
+function selectType(id,el){selectedType=id;document.querySelectorAll('.task-type-card').forEach(c=>c.classList.remove('active'));el.classList.add('active')}
+function setupUploadZone(){
+const z=document.getElementById('uploadZone');
+z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag')});
+z.addEventListener('dragleave',()=>z.classList.remove('drag'));
+z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('drag');handleFiles(e.dataTransfer.files)});
+}
+function handleFiles(files){
+for(const f of files){if(f.size>500*1024*1024){toast(`${f.name} excede 500MB`,'error');continue}selectedFiles.push(f)}
+renderFileList();
+}
+function renderFileList(){document.getElementById('fileList').innerHTML=selectedFiles.map((f,i)=>`<div class="flex items-center gap-05" style="padding:.3rem 0;border-bottom:1px solid var(--border)"><span>📄 ${esc(f.name)} (${(f.size/1024).toFixed(1)}KB)</span><button class="btn-sm btn-outline" onclick="selectedFiles.splice(${i},1);renderFileList()">✕</button></div>`).join('')}
+async function loadPromptSelect(){
+const d=await api('/api/system-prompts');if(!d||!d.prompts)return;
+const s=document.getElementById('taskPrompt');if(!s)return;
+d.prompts.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;s.appendChild(o)});
+}
+async function runTask(){
+const desc=document.getElementById('taskDesc').value.trim();
+if(!desc){toast('Descreva a tarefa','error');return}
+if(streaming)return;
+const btn=document.getElementById('runBtn');btn.disabled=true;
+const progressBar=document.getElementById('progressBar');progressBar.style.display='block';
+document.getElementById('progressFill').style.width='30%';
+document.getElementById('taskProgress').textContent='Executando...';
+
+if(selectedFiles.length>0){
+const fd=new FormData();fd.append('prompt',desc);fd.append('task_type',selectedType);fd.append('force_provider',document.getElementById('taskProvider').value||'');
+selectedFiles.forEach(f=>fd.append('files',f));
+try{const r=await fetch('/api/tasks/execute-raw',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd});
+const d=await r.json();lastResult=d;
+document.getElementById('progressFill').style.width='100%';
+document.getElementById('taskResult').innerHTML=renderResult(d);
+btn.disabled=false;setTimeout(()=>progressBar.style.display='none',1000);selectedFiles=[];renderFileList()}
+catch(e){toast('Erro: '+e.message,'error');btn.disabled=false;progressBar.style.display='none'}
+return;
+}
+streaming=true;
+document.getElementById('progressFill').style.width='50%';
+let content='';
+const resDiv=document.getElementById('taskResult');
+resDiv.innerHTML='<div class="result-box streaming" id="streamBox"><span class="spinner"></span> Conectando...</div>';
+const box=document.getElementById('streamBox');
+try{
+const response=await fetch('/api/tasks/execute-stream',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({prompt:desc,task_type:selectedType,force_provider:document.getElementById('taskProvider').value||undefined})});
+const reader=response.body.getReader();const decoder=new TextDecoder();let buffer='';
+while(true){
+const{done,value}=await reader.read();if(done)break;
+buffer+=decoder.decode(value,{stream:true});const lines=buffer.split('\n');buffer=lines.pop();
+for(const line of lines){
+if(!line.startsWith('data: '))continue;const data=line.slice(6);
+if(data==='[DONE]')continue;
+try{const parsed=JSON.parse(data);
+if(parsed.error){box.innerHTML='<span style="color:var(--error)">'+esc(parsed.error)+'</span>';break}
+if(parsed.chunk){content+=parsed.chunk;box.textContent=content}
+if(parsed.done){lastResult={success:true,content};break}
+}catch(e){}}
+}
+box.textContent=content||'Sem resposta';
+lastResult={success:true,content};
+document.getElementById('progressFill').style.width='100%';
+resDiv.innerHTML=renderResult(lastResult);
+}catch(e){resDiv.innerHTML='<div class="result-box"><span style="color:var(--error)">'+esc(e.message)+'</span></div>'}
+streaming=false;btn.disabled=false;setTimeout(()=>progressBar.style.display='none',1000);
+}
+function renderResult(d){
+if(!d)return'<div class="empty-state">Sem resultado</div>';
+const content=d.content||d.output||d.error||'Sem resposta';
+const isOk=d.success!==false;
+return`<div class="card"><div class="flex justify-between items-center"><h3>Resultado</h3><div class="btn-group"><button class="btn btn-sm btn-outline" onclick="copyResult()">📋 Copiar</button><button class="btn btn-sm btn-outline" onclick="downloadResult()">💾 Download</button><button class="btn btn-sm btn-outline" onclick="exportTask(${d.id||0},'pdf')">📄 PDF</button><button class="btn btn-sm btn-outline" onclick="exportTask(${d.id||0},'docx')">📝 DOCX</button></div></div><div class="result-box" style="color:${isOk?'var(--success)':'var(--error)'}">${esc(content)}</div>${d.provider?`<p class="text-sm text-muted mt-1">Provedor: ${esc(d.provider)} | Modelo: ${esc(d.model||'N/A')} | ${d.execution_time_ms||0}ms</p>`:''}</div>`;
+}
+function copyResult(){const c=lastResult?.content||document.querySelector('.result-box')?.textContent||'';navigator.clipboard.writeText(c).then(()=>toast('Copiado!','success')).catch(()=>toast('Erro ao copiar','error'))}
+function downloadResult(){const c=lastResult?.content||'';const b=new Blob([c],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='resultado.txt';a.click()}
+function exportTask(id,format){if(!id){toast('Execute uma tarefa primeiro','error');return}window.open('/api/export/'+format+'/'+id+'?token='+token)}
+
+function renderHistory(c){
+c.innerHTML=`<div class="topbar"><h1>Histórico de Tarefas</h1><button class="btn btn-sm btn-outline" onclick="exportAllTxt()">📥 Exportar Tudo (TXT)</button></div><div id="historyList"><div class="loading"><div class="spinner"></div>Carregando...</div></div>`;
+loadHistory();
+}
+async function loadHistory(){
+const d=await api('/api/tasks/history');
+const el=document.getElementById('historyList');
+if(!d||!d.tasks||!d.tasks.length){el.innerHTML='<div class="empty-state"><span class="icon">📋</span><p>Nenhuma tarefa encontrada</p></div>';return}
+el.innerHTML=d.tasks.map(t=>`<div class="card" style="cursor:pointer" onclick="viewTask(${t.id})"><div class="flex justify-between items-center"><div><strong>${esc(t.title)}</strong><span class="tag tag-${t.status==='completed'?'success':t.status==='failed'?'error':'info'}" style="margin-left:.5rem">${t.status}</span></div><span class="text-sm text-muted">${t.created_at?new Date(t.created_at).toLocaleDateString():''}</span></div><p class="text-sm text-muted mt-1">${esc((t.description||'').substring(0,100))}</p><div class="flex gap-05 mt-1"><span class="tag tag-info">${esc(t.task_type)}</span>${t.ai_provider_used?`<span class="tag tag-success">${esc(t.ai_provider_used)}</span>`:''}</div></div>`).join('');
+}
+async function viewTask(id){
+const d=await api('/api/tasks/history?limit=200');
+const t=d?.tasks?.find(x=>x.id===id);if(!t)return;
+const content=t.output_data||t.error_message||'Sem resultado';
+lastResult={success:t.status==='completed',content,id};
+openModal(`<h3>${esc(t.title)} <button class="modal-close" onclick="closeModal()">✕</button></h3>
+<p class="text-sm text-muted">Tipo: ${esc(t.task_type)} | Status: ${esc(t.status)} | ${t.created_at||''}</p>
+<p class="text-sm mt-1">${esc(t.description||'')}</p>
+<div class="result-box mt-1" style="max-height:400px;overflow-y:auto">${esc(content)}</div>
+<div class="flex gap-05 mt-1"><button class="btn btn-sm btn-outline" onclick="copyResult()">📋 Copiar</button><button class="btn btn-sm btn-outline" onclick="downloadResult()">💾 Download</button><button class="btn btn-sm btn-outline" onclick="exportTask(${id},'pdf')">📄 PDF</button><button class="btn btn-sm btn-outline" onclick="exportTask(${id},'docx')">📝 DOCX</button><button class="btn btn-sm btn-outline" onclick="loadVersions(${id})">📋 Versões</button></div>
+<div id="versionsList" class="mt-1"></div>`);
+}
+async function loadVersions(taskId){
+const d=await api('/api/tasks/'+taskId+'/versions');
+const el=document.getElementById('versionsList');if(!el)return;
+if(!d||!d.versions||!d.versions.length){el.innerHTML='<p class="text-sm text-muted">Nenhuma versão ainda</p>';return}
+el.innerHTML='<h4 class="mt-1">Versões</h4>'+d.versions.map(v=>`<div style="padding:.5rem;border:1px solid var(--border);border-radius:8px;margin-top:.5rem"><span class="version-badge">v${v.version_number}</span> <span class="text-sm text-muted">${v.created_at||''}</span><div class="result-box mt-1" style="max-height:200px">${esc((v.content||'').substring(0,2000))}</div></div>`).join('');
+}
+function exportAllTxt(){window.open('/api/export/all-txt')}
+
+function renderTerminal(c){
+c.innerHTML=`<div class="topbar"><h1>Terminal</h1></div>
+<div class="flex gap-1" style="height:calc(100vh - 120px)">
+<div style="flex:2;display:flex;flex-direction:column">
+<div class="terminal-output" id="termOutput" style="flex:1;overflow-y:auto">NexusAgent Terminal v3.0\nDigite comandos abaixo.\n\n</div>
+<div class="flex gap-05 mt-1"><input id="termInput" placeholder="Digite um comando..." style="flex:1;padding:.7rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:monospace" onkeydown="if(event.key==='Enter')execTerm()"><button class="btn" onclick="execTerm()">▶</button></div>
+</div>
+<div style="flex:1" class="card"><h3>Arquivos</h3><div id="fileBrowser"><div class="loading"><div class="spinner"></div></div></div></div>
+</div>`;
+loadFiles('.');setupTermHistory();
+}
+let termHist=[],termHistIdx=-1;
+function setupTermHistory(){document.getElementById('termInput')?.addEventListener('keydown',e=>{
+if(e.key==='ArrowUp'){e.preventDefault();if(termHistIdx<termHist.length-1){termHistIdx++;document.getElementById('termInput').value=termHist[termHistIdx]}}
+if(e.key==='ArrowDown'){e.preventDefault();if(termHistIdx>0){termHistIdx--;document.getElementById('termInput').value=termHist[termHistIdx]}else{termHistIdx=-1;document.getElementById('termInput').value=''}}
+})}
+async function execTerm(){
+const inp=document.getElementById('termInput');const cmd=inp.value.trim();if(!cmd)return;
+termHist.unshift(cmd);termHistIdx=-1;inp.value='';
+const out=document.getElementById('termOut');out.textContent+='> '+cmd+'\n';
+const d=await api('/api/terminal/execute',{method:'POST',body:JSON.stringify({command:cmd})});
+if(d){out.textContent+=(d.output||'')+(d.error?'\nERRO: '+d.error:'')+'\n';out.scrollTop=out.scrollHeight}
+}
+async function loadFiles(path){
+const d=await api('/api/terminal/files',{method:'POST',body:JSON.stringify({path})});
+const el=document.getElementById('fileBrowser');
+if(!d||!d.files){el.innerHTML='<p class="text-muted text-sm">Erro ao listar</p>';return}
+el.innerHTML=`<div class="file-item dir" onclick="loadFiles('..')">📁 ..</div>`+d.files.map(f=>`<div class="file-item${f.is_dir?' dir':''}" onclick="${f.is_dir?`loadFiles('${esc(f.path)}')`:`viewFile('${esc(f.path)}')`}">${f.is_dir?'📁':'📄'} ${esc(f.name)}${f.is_dir?'':` <span class="text-muted text-sm">(${(f.size/1024).toFixed(1)}KB)</span>`}</div>`).join('');
+}
+async function viewFile(path){
+const d=await api('/api/terminal/read',{method:'POST',body:JSON.stringify({path})});
+if(!d||!d.success){toast(d?.error||'Erro ao ler','error');return}
+openModal(`<h3>📄 ${esc(path)} <button class="modal-close" onclick="closeModal()">✕</button></h3><textarea id="fileEditor" style="width:100%;min-height:400px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:.8rem;font-family:monospace;font-size:.8rem">${esc(d.content)}</textarea><div class="flex gap-05 mt-1"><button class="btn btn-sm" onclick="saveFile('${esc(path)}')">💾 Salvar</button></div>`);
+}
+async function saveFile(path){
+const content=document.getElementById('fileEditor')?.value;
+if(content===undefined)return;
+const d=await api('/api/terminal/write',{method:'POST',body:JSON.stringify({path,content})});
+if(d?.success){toast('Arquivo salvo!','success');closeModal()}else toast(d?.error||'Erro','error');
+}
+
+function renderSandbox(c){
+c.innerHTML=`<div class="topbar"><h1>Sandbox de Código</h1></div>
+<div class="card"><div class="flex justify-between items-center mb-1"><h3>Executar Código</h3><div class="flex gap-05"><select id="sandboxLang" style="padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text)"><option value="python">Python</option><option value="javascript">JavaScript</option><option value="bash">Bash</option></select><button class="btn" onclick="runSandbox()">▶ Executar</button></div></div>
+<textarea id="sandboxCode" style="width:100%;min-height:250px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:.8rem;font-family:monospace;font-size:.85rem" placeholder="# Escreva seu código aqui...">print("Olá, NexusAgent!")</textarea></div>
+<div id="sandboxResult"></div>`;
+}
+async function runSandbox(){
+const code=document.getElementById('sandboxCode').value;
+const lang=document.getElementById('sandboxLang').value;
+document.getElementById('sandboxResult').innerHTML='<div class="loading"><div class="spinner"></div>Executando...</div>';
+const d=await api('/api/sandbox/execute',{method:'POST',body:JSON.stringify({code,language:lang,timeout:30})});
+if(!d){document.getElementById('sandboxResult').innerHTML='';return}
+const isOk=d.success;const color=isOk?'var(--success)':'var(--error)';
+document.getElementById('sandboxResult').innerHTML=`<div class="result-box" style="color:${color}"><strong>${isOk?'✅ Sucesso':'❌ Erro'} (${d.execution_time_ms}ms)</strong>\n\n${esc(d.output||'')}${d.error?'\n\nERRO:\n'+esc(d.error):''}</div>`;
+}
+
+function renderBrowser(c){
+c.innerHTML=`<div class="topbar"><h1>Browser Automation</h1></div>
+<div class="card"><div class="flex gap-05 mb-1"><input id="browserUrl" placeholder="https://exemplo.com" style="flex:1;padding:.7rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text)"><button class="btn" onclick="browseUrl()">🌐 Navegar</button></div>
+<div class="flex gap-05"><input id="browserSearch" placeholder="Buscar no DuckDuckGo..." style="flex:1;padding:.7rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text)" onkeydown="if(event.key==='Enter')searchWeb()"><button class="btn btn-outline" onclick="searchWeb()">🔍 Buscar</button></div></div>
+<div id="browserResult"></div>`;
+}
+async function browseUrl(){
+const url=document.getElementById('browserUrl').value.trim();if(!url){toast('Insira uma URL','error');return}
+document.getElementById('browserResult').innerHTML='<div class="loading"><div class="spinner"></div>Carregando página...</div>';
+const d=await api('/api/browser/navigate',{method:'POST',body:JSON.stringify({url})});
+if(!d||d.error){document.getElementById('browserResult').innerHTML=`<div class="card"><p style="color:var(--error)">${esc(d?.error||'Erro')}</p></div>`;return}
+document.getElementById('browserResult').innerHTML=`<div class="card"><h3>${esc(d.title||'Sem título')}</h3><p class="text-sm text-muted">URL: ${esc(d.url||url)} | Status: ${d.status} | ${d.execution_time_ms}ms</p><div class="result-box mt-1" style="max-height:400px;overflow-y:auto">${esc((d.text||'').substring(0,10000))}</div>${d.links?.length?`<h4 class="mt-1">Links (${d.links.length})</h4><div style="max-height:200px;overflow-y:auto">${d.links.slice(0,20).map(l=>`<div style="padding:.2rem 0"><a href="${esc(l.href)}" target="_blank" style="font-size:.8rem">${esc(l.text||l.href)}</a></div>`).join('')}</div>`:''}</div>`;
+}
+async function searchWeb(){
+const q=document.getElementById('browserSearch').value.trim();if(!q){toast('Insira um termo','error');return}
+document.getElementById('browserResult').innerHTML='<div class="loading"><div class="spinner"></div>Buscando...</div>';
+const d=await api('/api/browser/search',{method:'POST',body:JSON.stringify({query:q})});
+if(!d||d.error){document.getElementById('browserResult').innerHTML=`<div class="card"><p style="color:var(--error)">${esc(d?.error||'Erro')}</p></div>`;return}
+document.getElementById('browserResult').innerHTML=`<div class="card"><h3>Resultados para: ${esc(q)}</h3><div class="result-box mt-1" style="max-height:400px">${esc((d.text||'').substring(0,10000))}</div></div>`;
+}
+
+function renderProjects(c){
+c.innerHTML=`<div class="topbar"><h1>Projetos</h1><button class="btn" onclick="showCreateProject()">+ Novo Projeto</button></div><div id="projectsList"><div class="loading"><div class="spinner"></div></div></div>`;
+loadProjects();
+}
+async function loadProjects(){
+const d=await api('/api/projects/list');const el=document.getElementById('projectsList');
+if(!d||!d.projects||!d.projects.length){el.innerHTML='<div class="empty-state"><span class="icon">📁</span><p>Nenhum projeto ainda</p></div>';return}
+el.innerHTML=d.projects.map(p=>`<div class="card"><div class="flex justify-between items-center"><strong>${esc(p.name)}</strong><span class="tag tag-${p.status==='completed'?'success':p.status==='failed'?'error':'info'}">${p.status}</span></div><p class="text-sm text-muted mt-1">${esc(p.description||'')}</p><p class="text-sm text-muted">Tipo: ${esc(p.project_type)} | ${p.created_at||''}</p></div>`).join('');
+}
+async function showCreateProject(){
+const d=await api('/api/projects/templates/list');
+const templates=d?.templates||[];
+openModal(`<h3>Novo Projeto <button class="modal-close" onclick="closeModal()">✕</button></h3>
+<div class="form-group"><label>Nome</label><input id="projName" placeholder="Meu projeto"></div>
+<div class="form-group"><label>Descrição</label><input id="projDesc" placeholder="Descrição do projeto"></div>
+<div class="form-group"><label>Tipo</label><select id="projType">${templates.map(t=>`<option value="${t.id}">${t.name} — ${t.description}</option>`).join('')}</select></div>
+<button class="btn btn-full" onclick="createProject()">Criar Projeto</button>`);
+}
+async function createProject(){
+const name=document.getElementById('projName').value,desc=document.getElementById('projDesc').value,pt=document.getElementById('projType').value;
+if(!name){toast('Nome obrigatório','error');return}
+const d=await api('/api/projects/create',{method:'POST',body:JSON.stringify({name,description:desc,project_type:pt})});
+if(d?.project){toast('Projeto criado!','success');closeModal();loadProjects()}else toast(d?.error||'Erro','error');
+}
+
+function renderProviders(c){
+c.innerHTML=`<div class="topbar"><h1>Provedores IA</h1></div><div id="providersList"><div class="loading"><div class="spinner"></div></div></div>`;
+loadProviders();
+}
+async function loadProviders(){
+const d=await api('/api/tasks/providers');const el=document.getElementById('providersList');
+if(!d||!d.providers){el.innerHTML='<p class="text-muted">Erro ao carregar</p>';return}
+el.innerHTML=d.providers.map(p=>`<div class="provider-card"><div class="provider-dot ${p.configured?(p.cooling_down?'cooling':'on'):'off'}"></div><div class="provider-info"><h4>${esc(p.name)}</h4><p>${p.models.length} modelos | ${p.configured?'Configurado':'Sem chave'}${p.latency_ms?' | '+p.latency_ms+'ms':''}${p.cooling_down?' | ⚠️ Rate limited':''}</p><p class="text-sm">${p.strengths.join(', ')}</p></div></div>`).join('');
+}
+
+function renderWorkflows(c){
+c.innerHTML=`<div class="topbar"><h1>Workflows</h1><button class="btn" onclick="showCreateWorkflow()">+ Novo Workflow</button></div><div id="workflowsList"><div class="loading"><div class="spinner"></div></div></div>`;
+loadWorkflows();
+}
+async function loadWorkflows(){
+const d=await api('/api/workflows');const el=document.getElementById('workflowsList');
+if(!d||!d.workflows||!d.workflows.length){el.innerHTML='<div class="empty-state"><span class="icon">⚙️</span><p>Nenhum workflow ainda</p></div>';return}
+el.innerHTML=d.workflows.map(w=>`<div class="card"><div class="flex justify-between items-center"><strong>${esc(w.name)}</strong><div class="btn-group"><button class="btn btn-sm btn-outline" onclick="execWorkflow(${w.id})">▶ Executar</button><button class="btn btn-sm btn-outline" style="color:var(--error)" onclick="delWorkflow(${w.id})">🗑️</button></div></div><p class="text-sm text-muted mt-1">${w.steps_json?JSON.parse(w.steps_json).length:'0'} passos | Status: ${esc(w.status)} | ${w.last_run||w.created_at||''}</p></div>`).join('');
+}
+async function showCreateWorkflow(){
+openModal(`<h3>Novo Workflow <button class="modal-close" onclick="closeModal()">✕</button></h3>
+<div class="form-group"><label>Nome</label><input id="wfName" placeholder="Meu workflow"></div>
+<div class="form-group"><label>Passos (JSON — cada passo tem "prompt" e "task_type")</label><textarea id="wfSteps" rows="6" style="font-family:monospace" placeholder='[{"prompt":"Gere um README","task_type":"documentation"},{"prompt":"Crie testes","task_type":"testing"}]'></textarea></div>
+<button class="btn btn-full" onclick="createWorkflow()">Criar</button>`);
+}
+async function createWorkflow(){
+const name=document.getElementById('wfName').value.trim();
+const stepsText=document.getElementById('wfSteps').value.trim();
+if(!name){toast('Nome obrigatório','error');return}
+let steps;try{steps=JSON.parse(stepsText)}catch(e){toast('JSON inválido nos passos','error');return}
+const d=await api('/api/workflows/create',{method:'POST',body:JSON.stringify({name,steps})});
+if(d?.workflow){toast('Workflow criado!','success');closeModal();loadWorkflows()}else toast(d?.error||'Erro','error');
+}
+async function execWorkflow(id){
+toast('Executando workflow...','info');
+const d=await api('/api/workflows/execute/'+id,{method:'POST'});
+if(d?.results){
+const results=d.results.map(r=>`<div class="card"><strong>Passo ${r.step}</strong> <span class="tag tag-${r.status==='completed'?'success':'error'}">${r.status}</span>${r.content?`<div class="result-box mt-1" style="max-height:200px">${esc(r.content.substring(0,2000))}</div>`:''}${r.error?`<p class="error-msg">${esc(r.error)}</p>`:''}</div>`).join('');
+openModal(`<h3>Resultados do Workflow <button class="modal-close" onclick="closeModal()">✕</button></h3>${results}`);
+}else toast(d?.error||'Erro','error');
+}
+async function delWorkflow(id){if(!confirm('Deletar workflow?'))return;await api('/api/workflows/'+id,{method:'DELETE'});loadWorkflows()}
+
+function renderPrompts(c){
+c.innerHTML=`<div class="topbar"><h1>System Prompts</h1><button class="btn" onclick="showCreatePrompt()">+ Novo Prompt</button></div><div id="promptsList"><div class="loading"><div class="spinner"></div></div></div>`;
+loadPrompts();
+}
+async function loadPrompts(){
+const d=await api('/api/system-prompts');const el=document.getElementById('promptsList');
+if(!d||!d.prompts||!d.prompts.length){el.innerHTML='<div class="empty-state"><span class="icon">📝</span><p>Nenhum prompt personalizado</p></div>';return}
+el.innerHTML=d.prompts.map(p=>`<div class="card"><div class="flex justify-between items-center"><strong>${esc(p.name)}</strong><div class="btn-group"><span class="tag tag-info">${esc(p.task_type)}</span><button class="btn btn-sm btn-outline" style="color:var(--error)" onclick="delPrompt(${p.id})">🗑️</button></div></div><p class="text-sm mt-1" style="white-space:pre-wrap">${esc(p.prompt.substring(0,300))}</p></div>`).join('');
+}
+async function showCreatePrompt(){
+openModal(`<h3>Novo System Prompt <button class="modal-close" onclick="closeModal()">✕</button></h3>
+<div class="form-group"><label>Nome</label><input id="spName" placeholder="Meu prompt"></div>
+<div class="form-group"><label>Tipo de tarefa</label><select id="spType"><option value="general">Geral</option><option value="code_generation">Geração de Código</option><option value="code_review">Revisão</option><option value="documentation">Documentação</option><option value="testing">Testes</option></select></div>
+<div class="form-group"><label>Prompt</label><textarea id="spPrompt" rows="6" placeholder="Você é um especialista em..."></textarea></div>
+<button class="btn btn-full" onclick="createPrompt()">Criar</button>`);
+}
+async function createPrompt(){
+const name=document.getElementById('spName').value,prompt=document.getElementById('spPrompt').value,task_type=document.getElementById('spType').value;
+if(!name||!prompt){toast('Preencha todos','error');return}
+const d=await api('/api/system-prompts/create',{method:'POST',body:JSON.stringify({name,prompt,task_type})});
+if(d?.id){toast('Prompt criado!','success');closeModal();loadPrompts()}else toast(d?.error||'Erro','error');
+}
+async function delPrompt(id){if(!confirm('Deletar?'))return;await api('/api/system-prompts/'+id,{method:'DELETE'});loadPrompts()}
+
+function renderDeployments(c){
+c.innerHTML=`<div class="topbar"><h1>Deploys</h1><button class="btn" onclick="showCreateDeploy()">+ Novo Deploy</button></div><div id="deployList"><div class="loading"><div class="spinner"></div></div></div>`;
+loadDeploys();
+}
+async function loadDeploys(){
+const d=await api('/api/deployments');const el=document.getElementById('deployList');
+if(!d||!d.deployments||!d.deployments.length){el.innerHTML='<div class="empty-state"><span class="icon">☁️</span><p>Nenhum deploy ainda</p></div>';return}
+el.innerHTML=d.deployments.map(dep=>`<div class="card"><div class="flex justify-between items-center"><strong>${esc(dep.platform)}</strong><span class="tag tag-${dep.status==='completed'?'success':dep.status==='failed'?'error':'info'}">${dep.status}</span></div><p class="text-sm text-muted mt-1">Projeto: ${esc(dep.project_name||'N/A')} | ${dep.created_at||''}</p>${dep.url?`<a href="${esc(dep.url)}" target="_blank" class="text-sm">${esc(dep.url)}</a>`:''}</div>`).join('');
+}
+async function showCreateDeploy(){
+const d=await api('/api/projects/list');
+const projects=d?.projects||[];
+openModal(`<h3>Novo Deploy <button class="modal-close" onclick="closeModal()">✕</button></h3>
+<div class="form-group"><label>Projeto</label><select id="depProject">${projects.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></div>
+<div class="form-group"><label>Plataforma</label><select id="depPlatform"><option value="vercel">Vercel</option><option value="netlify">Netlify</option><option value="render">Render</option><option value="cloudflare_pages">Cloudflare Pages</option></select></div>
+<button class="btn btn-full" onclick="createDeploy()">Criar Deploy</button>`);
+}
+async function createDeploy(){
+const project_id=parseInt(document.getElementById('depProject').value);
+const platform=document.getElementById('depPlatform').value;
+const d=await api('/api/deployments/create',{method:'POST',body:JSON.stringify({project_id,platform})});
+if(d?.deployment){toast('Deploy criado!','success');closeModal();loadDeploys()}else toast(d?.error||'Erro','error');
+}
+
+function renderDBOps(c){
+c.innerHTML=`<div class="topbar"><h1>Banco de Dados</h1></div>
+<div class="card"><h3>📊 Tabelas</h3><div id="dbTables"><div class="loading"><div class="spinner"></div></div></div></div>
+<div class="card mt-1"><h3>🔍 Consulta SQL</h3><div class="form-group"><textarea id="sqlQuery" rows="3" style="font-family:monospace" placeholder="SELECT * FROM tasks LIMIT 10"></textarea></div><button class="btn" onclick="runQuery()">▶ Executar SELECT</button><div id="sqlResult" class="mt-1"></div></div>`;
+loadDBTables();
+}
+async function loadDBTables(){
+const d=await api('/api/db/tables');const el=document.getElementById('dbTables');
+if(!d||!d.tables){el.innerHTML='<p class="text-muted">Erro</p>';return}
+el.innerHTML=`<table><thead><tr><th>Tabela</th><th>Linhas</th><th>Colunas</th><th></th></tr></thead><tbody>${d.tables.map(t=>`<tr><td><strong>${esc(t.name)}</strong></td><td>${t.row_count}</td><td class="text-sm text-muted">${t.columns.join(', ')}</td><td><button class="btn btn-sm btn-outline" onclick="browseTable('${esc(t.name)}')">Ver</button></td></tr>`).join('')}</tbody></table>`;
+}
+async function runQuery(){
+const q=document.getElementById('sqlQuery').value.trim();if(!q){toast('Digite uma query','error');return}
+document.getElementById('sqlResult').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+const d=await api('/api/db/query',{method:'POST',body:JSON.stringify({query:q})});
+if(!d||d.error){document.getElementById('sqlResult').innerHTML=`<p class="error-msg">${esc(d?.error||'Erro')}</p>`;return}
+document.getElementById('sqlResult').innerHTML=`<p class="text-sm text-muted">${d.count} resultados</p><div class="table-wrap mt-1"><table><thead><tr>${d.rows[0]?Object.keys(d.rows[0]).map(k=>`<th>${esc(k)}</th>`).join(''):''}</tr></thead><tbody>${d.rows.map(r=>`<tr>${Object.values(r).map(v=>`<td>${esc(String(v??''))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+async function browseTable(name){
+const d=await api('/api/db/table/'+name+'?limit=50');
+openModal(`<h3>${esc(name)} <button class="modal-close" onclick="closeModal()">✕</button></h3>
+<p class="text-sm text-muted">${d?.total||0} linhas total</p>
+<div class="table-wrap mt-1"><table><thead><tr>${d?.columns?.map(c=>`<th>${esc(c)}</th>`).join('')||''}</tr></thead><tbody>${(d?.rows||[]).map(r=>`<tr>${Object.values(r).map(v=>`<td>${esc(String(v??''))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`);
+}
+
+function renderNotifications(c){
+c.innerHTML=`<div class="topbar"><h1>Notificações</h1><button class="btn btn-sm btn-outline" onclick="markAllRead()">✅ Marcar todas como lidas</button></div><div id="notifList"><div class="loading"><div class="spinner"></div></div></div>`;
+loadNotifications();
+}
+async function loadNotifications(){
+const d=await api('/api/notifications');const el=document.getElementById('notifList');
+if(!d||!d.notifications||!d.notifications.length){el.innerHTML='<div class="empty-state"><span class="icon">🔔</span><p>Nenhuma notificação</p></div>';return}
+const badge=document.getElementById('notifBadge');
+if(d.unread>0){badge.textContent=d.unread;badge.style.display='inline'}else badge.style.display='none';
+el.innerHTML=d.notifications.map(n=>`<div class="card" style="opacity:${n.read?.6:1}"><div class="flex justify-between items-center"><strong>${esc(n.title)}</strong><span class="text-sm text-muted">${n.created_at||''}</span></div><p class="text-sm mt-1">${esc(n.message)}</p></div>`).join('');
+}
+async function markAllRead(){await api('/api/notifications/mark-read',{method:'POST'});loadNotifications();toast('Notificações marcadas','success')}
+
+function renderMonitoring(c){
+c.innerHTML=`<div class="topbar"><h1>Monitoramento</h1></div>
+<div class="grid grid-4" id="monStats"><div class="loading"><div class="spinner"></div></div></div>
+<div class="card mt-1"><h3>Eventos Recentes</h3><div id="monEvents"><div class="loading"><div class="spinner"></div></div></div></div>`;
+loadMonitoring();
+}
+async function loadMonitoring(){
+const d=await api('/api/monitoring/stats');
+if(d&&!d.error){
+document.getElementById('monStats').innerHTML=`
+<div class="stat-card"><div class="stat-value">${d.tasks||0}</div><div class="stat-label">Tarefas</div></div>
+<div class="stat-card success"><div class="stat-value">${d.completed||0}</div><div class="stat-label">Concluídas</div></div>
+<div class="stat-card error"><div class="stat-value">${d.failed||0}</div><div class="stat-label">Falharam</div></div>
+<div class="stat-card info"><div class="stat-value">${d.tokens||0}</div><div class="stat-label">Tokens</div></div>`;
+}
+const ev=await api('/api/monitoring');
+const el=document.getElementById('monEvents');
+if(ev?.events?.length){el.innerHTML=ev.events.map(e=>`<div style="padding:.4rem 0;border-bottom:1px solid var(--border)"><span class="tag tag-info">${esc(e.event_type)}</span> <span class="text-sm">${esc(e.message)}</span> <span class="text-sm text-muted">${e.created_at||''}</span></div>`).join('')}else el.innerHTML='<p class="text-muted text-sm">Nenhum evento</p>';
+}
+
+let isAdminUser=false;
+async function checkAdmin(){
+const d=await api('/api/admin/check');
+if(d&&d.admin){isAdminUser=true;const link=document.getElementById('adminLink');if(link)link.style.display='flex'}
+}
+
+function renderAdmin(c){
+if(!isAdminUser){c.innerHTML='<div class="empty-state"><span class="icon">🔒</span><p>Acesso negado. Apenas administradores podem acessar este painel.</p></div>';return}
+c.innerHTML=`<div class="topbar"><h1>🛡️ Painel Administrativo</h1><span class="tag tag-error">MODO ADMIN</span></div>
+<div class="tab-bar" id="adminTabs">
+<button class="tab-btn active" onclick="showAdminTab('overview',this)">📊 Geral</button>
+<button class="tab-btn" onclick="showAdminTab('users',this)">👥 Usuários</button>
+<button class="tab-btn" onclick="showAdminTab('sessions',this)">📋 Sessões</button>
+<button class="tab-btn" onclick="showAdminTab('tasks',this)">🚀 Tarefas</button>
+<button class="tab-btn" onclick="showAdminTab('bypass',this)" style="color:var(--error)">🔓 IA Sem Restrições</button>
+<button class="tab-btn" onclick="showAdminTab('resources',this)">💻 Recursos</button>
+<button class="tab-btn" onclick="showAdminTab('logs',this)">🔍 Logs</button>
+<button class="tab-btn" onclick="showAdminTab('notify',this)">📢 Notificar</button>
+<button class="tab-btn" onclick="showAdminTab('terminal',this)">💻 Terminal</button>
+<button class="tab-btn" onclick="showAdminTab('sql',this)">🗄️ SQL</button>
+</div>
+<div id="adminTabContent"></div>`;
+showAdminTab('overview');
+}
+function showAdminTab(tab,btn){
+document.querySelectorAll('#adminTabs .tab-btn').forEach(b=>b.classList.remove('active'));
+if(btn)btn.classList.add('active');
+const el=document.getElementById('adminTabContent');
+switch(tab){
+case'overview':renderAdminOverview(el);break;
+case'users':renderAdminUsers(el);break;
+case'sessions':renderAdminSessions(el);break;
+case'tasks':renderAdminTasks(el);break;
+case'bypass':renderAdminBypass(el);break;
+case'resources':renderAdminResources(el);break;
+case'logs':renderAdminLogs(el);break;
+case'notify':renderAdminNotify(el);break;
+case'terminal':renderAdminTerminal(el);break;
+case'sql':renderAdminSQL(el);break;
+}
+}
+
+function renderAdminOverview(c){
+c.innerHTML='<div class="grid grid-4" id="adminStats"><div class="loading"><div class="spinner"></div></div></div>';
+loadAdminStats();
+}
+async function loadAdminStats(){
+const d=await api('/api/admin/stats');if(!d||!d.stats)return;
+const s=d.stats;
+document.getElementById('adminStats').innerHTML=`
+<div class="stat-card"><div class="stat-value">${s.total_users||0}</div><div class="stat-label">Usuários</div></div>
+<div class="stat-card success"><div class="stat-value">${s.active_users||0}</div><div class="stat-label">Ativos</div></div>
+<div class="stat-card error"><div class="stat-value">${s.total_tasks||0}</div><div class="stat-label">Tarefas</div></div>
+<div class="stat-card info"><div class="stat-value">${s.active_sessions||0}</div><div class="stat-label">Sessões</div></div>`;
+}
+
+function renderAdminUsers(c){
+c.innerHTML='<div id="adminUsersList"><div class="loading"><div class="spinner"></div></div></div>';
+loadAdminUsers();
+}
+async function loadAdminUsers(){
+const d=await api('/api/admin/users');const el=document.getElementById('adminUsersList');
+if(!d||!d.users||!d.users.length){el.innerHTML='<p class="text-muted">Nenhum usuário</p>';return}
+el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>ID</th><th>Usuário</th><th>Email</th><th>Status</th><th>Admin</th><th>Tarefas</th><th>Criado</th><th>Ações</th></tr></thead><tbody>${d.users.map(u=>`<tr><td>${u.id}</td><td><strong>${esc(u.username)}</strong></td><td class="text-sm">${esc(u.email)}</td><td><span class="tag tag-${u.is_active?'success':'error'}">${u.is_active?'Ativo':'Banido'}</span></td><td>${u.is_admin?'<span class="tag tag-error">ADMIN</span>':'-'}</td><td>${u.total_tasks}</td><td class="text-sm text-muted">${u.created_at||''}</td><td><div class="flex gap-05">${u.is_active?`<button class="btn btn-sm btn-outline" style="color:var(--warning)" onclick="adminBan(${u.id})">Banir</button>`:`<button class="btn btn-sm btn-outline" onclick="adminUnban(${u.id})">Desbanir</button>`}${!u.is_admin?`<button class="btn btn-sm btn-outline" style="color:var(--error)" onclick="adminDeleteUser(${u.id})">Deletar</button><button class="btn btn-sm btn-outline" onclick="adminPromote(${u.id})">Promover</button>`:''}</div></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderAdminSessions(c){
+c.innerHTML='<div id="adminSessionsList"><div class="loading"><div class="spinner"></div></div></div><button class="btn btn-sm btn-danger mt-1" onclick="adminForceLogoutAll()">🔒 Forçar Logout de Todos</button>';
+loadAdminSessions();
+}
+async function loadAdminSessions(){
+const d=await api('/api/admin/sessions');const el=document.getElementById('adminSessionsList');
+if(!d||!d.sessions||!d.sessions.length){el.innerHTML='<p class="text-muted">Nenhuma sessão ativa</p>';return}
+el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Usuário</th><th>IP</th><th>Browser</th><th>Criado</th><th>Ações</th></tr></thead><tbody>${d.sessions.map(s=>`<tr><td><strong>${esc(s.username)}</strong></td><td class="text-sm">${esc(s.ip_address||'N/A')}</td><td class="text-sm">${esc((s.user_agent||'').substring(0,50))}</td><td class="text-sm text-muted">${s.created_at||''}</td><td><button class="btn btn-sm btn-outline" style="color:var(--error)" onclick="adminForceLogout(${s.user_id})">Forçar Logout</button></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderAdminTasks(c){
+c.innerHTML='<div id="adminTasksList"><div class="loading"><div class="spinner"></div></div></div>';
+loadAdminTasks();
+}
+async function loadAdminTasks(){
+const d=await api('/api/admin/tasks');const el=document.getElementById('adminTasksList');
+if(!d||!d.tasks||!d.tasks.length){el.innerHTML='<p class="text-muted">Nenhuma tarefa</p>';return}
+el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>ID</th><th>Usuário</th><th>Título</th><th>Tipo</th><th>Status</th><th>Criado</th></tr></thead><tbody>${d.tasks.slice(0,50).map(t=>`<tr><td>${t.id}</td><td>${esc(t.username)}</td><td><strong>${esc(t.title)}</strong></td><td class="text-sm">${esc(t.task_type)}</td><td><span class="tag tag-${t.status==='completed'?'success':t.status==='failed'?'error':'info'}">${t.status}</span></td><td class="text-sm text-muted">${t.created_at||''}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderAdminBypass(c){
+c.innerHTML=`<div class="card" style="border-color:var(--error)">
+<h3 style="color:var(--error)">🔓 IA Sem Restrições — Modo Admin</h3>
+<p class="text-sm text-muted mb-1">Como admin, você tem todas as restrições desativadas para testar as IAs livremente.</p>
+<div class="grid grid-2">
+<div class="card"><h4>⚡ Rate Limits</h4><p class="text-sm" style="color:var(--success)">✅ SEM LIMITE — Pode fazer quantas requisições quiser</p></div>
+<div class="card"><h4>🤖 Provedores</h4><p class="text-sm" style="color:var(--success)">✅ TODOS LIBERADOS — Acesso a todos os 15 provedores</p></div>
+<div class="card"><h4>📊 Tarefas</h4><p class="text-sm" style="color:var(--success)">✅ SEM LIMITE — Pode criar quantas tarefas quiser</p></div>
+<div class="card"><h4>🎯 Modelos</h4><p class="text-sm" style="color:var(--success)">✅ TODOS — Pode usar qualquer modelo de qualquer provedor</p></div>
+<div class="card"><h4>🔄 Streaming</h4><p class="text-sm" style="color:var(--success)">✅ LIBERADO — Respostas em tempo real sem limite</p></div>
+<div class="card"><h4>🧪 Sandbox</h4><p class="text-sm" style="color:var(--success)">✅ LIBERADO — Execução de código sem restrições</p></div>
+<div class="card"><h4>💻 Terminal</h4><p class="text-sm" style="color:var(--success)">✅ SEM LIMITE — Comandos sem rate limit</p></div>
+<div class="card"><h4>🌐 Browser</h4><p class="text-sm" style="color:var(--success)">✅ LIBERADO — Navegação sem restrições</p></div>
+</div>
+<div class="mt-1"><button class="btn" onclick="loadAdminRestrictions()">🔄 Verificar Status das Restrições</button></div>
+<div id="restrictionsResult" class="mt-1"></div></div>`;
+}
+async function loadAdminRestrictions(){
+const d=await api('/api/admin/restrictions');if(!d||!d.restrictions)return;
+const el=document.getElementById('restrictionsResult');
+el.innerHTML=`<div class="result-box">${Object.entries(d.restrictions).map(([k,v])=>`${k}: ${v}`).join('\n')}</div><p class="text-sm text-muted mt-1">${d.message}</p>`;
+}
+
+function renderAdminResources(c){
+c.innerHTML='<div class="grid grid-4" id="resStats"><div class="loading"><div class="spinner"></div></div></div><div class="card mt-1"><h3>📊 Detalhes</h3><div id="resDetails"><div class="loading"><div class="spinner"></div></div></div></div><button class="btn btn-sm btn-outline mt-1" onclick="loadAdminResources()">🔄 Atualizar</button>';
+loadAdminResources();
+}
+async function loadAdminResources(){
+const d=await api('/api/admin/resources');if(!d||!d.resources)return;const r=d.resources;
+document.getElementById('resStats').innerHTML=`
+<div class="stat-card ${r.mem_used_percent>80?'error':'success'}"><div class="stat-value">${r.mem_used_percent}%</div><div class="stat-label">RAM Usada</div></div>
+<div class="stat-card ${r.disk_used_percent>80?'error':'success'}"><div class="stat-value">${r.disk_used_percent}%</div><div class="stat-label">Disco Usado</div></div>
+<div class="stat-card info"><div class="stat-value">${r.cpu_load_1m}</div><div class="stat-label">CPU Load (1m)</div></div>
+<div class="stat-card"><div class="stat-value">${r.process_memory_mb}MB</div><div class="stat-label">Processo NexusAgent</div></div>`;
+document.getElementById('resDetails').innerHTML=`
+<table><tbody>
+<tr><td><strong>Memória Total</strong></td><td>${(r.mem_total_kb/1024/1024).toFixed(1)} GB</td></tr>
+<tr><td><strong>Memória Usada</strong></td><td>${(r.mem_used_kb/1024/1024).toFixed(1)} GB (${r.mem_used_percent}%)</td></tr>
+<tr><td><strong>Memória Livre</strong></td><td>${(r.mem_free_kb/1024/1024).toFixed(1)} GB</td></tr>
+<tr><td><strong>Disco Total</strong></td><td>${r.disk_total_gb} GB</td></tr>
+<tr><td><strong>Disco Usado</strong></td><td>${r.disk_used_gb} GB (${r.disk_used_percent}%)</td></tr>
+<tr><td><strong>Disco Livre</strong></td><td>${r.disk_free_gb} GB</td></tr>
+<tr><td><strong>CPU Load (1/5/15 min)</strong></td><td>${r.cpu_load_1m} / ${r.cpu_load_5m} / ${r.cpu_load_15m}</td></tr>
+<tr><td><strong>Memória do Processo</strong></td><td>${r.process_memory_mb} MB</td></tr>
+</tbody></table>`;
+}
+
+function renderAdminLogs(c){
+c.innerHTML=`<div class="card"><h3>🔍 Logs em Tempo Real</h3><div class="flex gap-05 mb-1"><select id="logType" style="padding:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text)"><option value="db">Logs do Banco</option><option value="file">Logs do Servidor</option></select><button class="btn btn-sm" onclick="loadAdminLogs()">🔄 Atualizar</button></div><div id="logsContent" style="background:#000;color:#0f0;font-family:monospace;font-size:.8rem;padding:1rem;border-radius:8px;max-height:500px;overflow-y:auto;white-space:pre-wrap"><div class="loading"><div class="spinner"></div></div></div></div>`;
+loadAdminLogs();
+}
+async function loadAdminLogs(){
+const type=document.getElementById('logType').value;const el=document.getElementById('logsContent');
+if(type==='file'){const d=await api('/api/admin/logs/file?lines=150');el.textContent=d?.content||'Nenhum log encontrado'}
+else{const d=await api('/api/admin/logs?limit=100');if(!d||!d.logs||!d.logs.length){el.textContent='Nenhum log';return}el.textContent=d.logs.map(l=>`[${l.created_at}] ${l.event_type}: ${l.message}`).join('\n')}
+}
+
+function renderAdminNotify(c){
+c.innerHTML=`<div class="card"><h3>📢 Enviar Notificação</h3>
+<div class="form-group"><label>Título</label><input id="notifTitle" placeholder="Título da notificação"></div>
+<div class="form-group"><label>Mensagem</label><textarea id="notifMsg" rows="3" placeholder="Mensagem..."></textarea></div>
+<div class="form-group"><label>Enviar para (vazio = todos)</label><select id="notifTarget"><option value="">Todos os usuários</option></select></div>
+<button class="btn" onclick="adminSendNotif()">📢 Enviar</button></div>
+<div class="card mt-1"><h3>📋 Notificações Enviadas</h3><div id="adminNotifList"><div class="loading"><div class="spinner"></div></div></div></div>`;
+loadAdminNotifTargets();loadAdminNotifList();
+}
+async function loadAdminNotifTargets(){const d=await api('/api/admin/users');const s=document.getElementById('notifTarget');if(!d?.users)return;d.users.forEach(u=>{const o=document.createElement('option');o.value=u.id;o.textContent=`${u.username} (${u.email})`;s.appendChild(o)})}
+async function loadAdminNotifList(){const d=await api('/api/admin/notifications-all');const el=document.getElementById('adminNotifList');if(!d?.notifications?.length){el.innerHTML='<p class="text-muted">Nenhuma notificação</p>';return}el.innerHTML=d.notifications.slice(0,50).map(n=>`<div style="padding:.4rem 0;border-bottom:1px solid var(--border)"><strong>${esc(n.title)}</strong> <span class="text-sm text-muted">→ ${esc(n.username)}</span><p class="text-sm">${esc(n.message)}</p><span class="text-sm text-muted">${n.created_at||''}</span></div>`).join('')}
+async function adminSendNotif(){const title=document.getElementById('notifTitle').value.trim();const msg=document.getElementById('notifMsg').value.trim();const target=document.getElementById('notifTarget').value;if(!title||!msg){toast('Preencha título e mensagem','error');return}const body={title,message:msg};if(target)body.user_id=parseInt(target);const d=await api('/api/admin/send-notification',{method:'POST',body:JSON.stringify(body)});if(d?.message){toast(d.message,'success');loadAdminNotifList()}else toast(d?.error||'Erro','error')}
+
+function renderAdminTerminal(c){
+c.innerHTML=`<div class="card"><h3>💻 Terminal do Servidor</h3>
+<div class="terminal-output" id="admTermOutput" style="min-height:300px;max-height:500px;overflow-y:auto">NexusAgent Admin Terminal\nDigite comandos para executar no servidor.\n\n</div>
+<div class="flex gap-05 mt-1"><input id="admTermInput" placeholder="ls -la" style="flex:1;padding:.7rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:monospace" onkeydown="if(event.key==='Enter')execAdminTerm()"><button class="btn" onclick="execAdminTerm()">▶ Executar</button></div></div>`;
+}
+let admTermHist=[],admTermIdx=-1;
+async function execAdminTerm(){
+const inp=document.getElementById('admTermInput');const cmd=inp.value.trim();if(!cmd)return;
+admTermHist.unshift(cmd);admTermIdx=-1;inp.value='';
+const out=document.getElementById('admTermOutput');
+out.textContent+='> '+cmd+'\n';
+const d=await api('/api/admin/terminal',{method:'POST',body:JSON.stringify({command:cmd})});
+if(d){out.textContent+=(d.output||'')+(d.error?'\nERRO: '+d.error:'')+'\n\n'}
+out.scrollTop=out.scrollHeight;
+}
+
+function renderAdminSQL(c){
+c.innerHTML=`<div class="card"><h3>🗄️ Executar SQL</h3>
+<div class="form-group"><textarea id="adminSQL" rows="4" style="font-family:monospace" placeholder="SELECT * FROM users"></textarea></div>
+<div class="flex gap-05"><button class="btn" onclick="adminRunSQL()">▶ Executar</button><button class="btn btn-danger" onclick="adminClearAll()">🗑️ Limpar Tudo</button><button class="btn btn-outline" onclick="adminBackup()">💾 Backup</button></div>
+<div id="adminSQLResult" class="mt-1"></div></div>`;
+}
+async function adminRunSQL(){const sql=document.getElementById('adminSQL').value.trim();if(!sql){toast('Digite uma query','error');return}document.getElementById('adminSQLResult').innerHTML='<div class="loading"><div class="spinner"></div></div>';const d=await api('/api/admin/sql',{method:'POST',body:JSON.stringify({sql})});if(!d||d.error){document.getElementById('adminSQLResult').innerHTML=`<p class="error-msg">${esc(d?.error||'Erro')}</p>`;return}const r=d.result;if(Array.isArray(r)){document.getElementById('adminSQLResult').innerHTML=`<p class="text-sm text-muted">${r.length} resultados</p><div class="table-wrap mt-1"><table><thead><tr>${r[0]?Object.keys(r[0]).map(k=>`<th>${esc(k)}</th>`).join(''):''}</tr></thead><tbody>${r.map(row=>`<tr>${Object.values(row).map(v=>`<td>${esc(String(v??''))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}else{document.getElementById('adminSQLResult').innerHTML=`<div class="result-box">${esc(JSON.stringify(r,null,2))}</div>`}}
+
+async function adminBan(id){if(!confirm('Banir este usuário?'))return;const d=await api('/api/admin/ban',{method:'POST',body:JSON.stringify({user_id:id})});if(d?.message){toast(d.message,'success');loadAdminUsers();loadAdminStats()}else toast(d?.error||'Erro','error')}
+async function adminUnban(id){const d=await api('/api/admin/unban',{method:'POST',body:JSON.stringify({user_id:id})});if(d?.message){toast(d.message,'success');loadAdminUsers();loadAdminStats()}else toast(d?.error||'Erro','error')}
+async function adminDeleteUser(id){if(!confirm('DELETAR este usuário e TODOS os seus dados? Esta ação é irreversível!'))return;const d=await api('/api/admin/delete-user',{method:'POST',body:JSON.stringify({user_id:id})});if(d?.message){toast(d.message,'success');loadAdminUsers();loadAdminStats()}else toast(d?.error||'Erro','error')}
+async function adminPromote(id){if(!confirm('Promover este usuário a admin?'))return;const d=await api('/api/admin/promote',{method:'POST',body:JSON.stringify({user_id:id})});if(d?.message){toast(d.message,'success');loadAdminUsers()}else toast(d?.error||'Erro','error')}
+async function adminForceLogout(id){if(!confirm('Forçar logout deste usuário?'))return;const d=await api('/api/admin/force-logout',{method:'POST',body:JSON.stringify({user_id:id})});if(d?.message){toast(d.message,'success');loadAdminSessions()}else toast(d?.error||'Erro','error')}
+async function adminForceLogoutAll(){if(!confirm('Forçar logout de TODOS os usuários?'))return;const d=await api('/api/admin/force-logout-all',{method:'POST'});if(d?.message){toast(d.message,'success');loadAdminSessions()}else toast(d?.error||'Erro','error')}
+async function adminClearAll(){if(!confirm('⚠️ DELETAR TODOS OS DADOS?'))return;if(!confirm('Tem CERTEZA?'))return;const d=await api('/api/admin/clear-all',{method:'POST'});if(d?.message){toast(d.message,'success');loadAdminStats();loadAdminUsers()}else toast(d?.error||'Erro','error')}
+async function adminBackup(){const d=await api('/api/admin/backup',{method:'POST'});if(d?.success){toast('Backup criado!','success')}else toast(d?.error||'Erro','error')}
+
+function renderSettings(c){
+const isDark=document.documentElement.classList.contains('dark');
+c.innerHTML=`<div class="topbar"><h1>Configurações</h1></div>
+<div class="card"><h3>🎨 Tema</h3><button class="btn btn-outline" onclick="toggleTheme()">${isDark?'☀️ Modo Claro':'🌙 Modo Escuro'}</button></div>
+<div class="card mt-1"><h3>📦 Downloads</h3><p class="text-sm text-muted mb-1">Baixe o projeto completo</p>
+<a href="/download/nexus-zip" class="btn btn-outline mt-1" style="display:inline-block;text-decoration:none;margin-right:.5rem">📥 ZIP Completo</a>
+<a href="/download/nexus-txt" class="btn btn-outline mt-1" style="display:inline-block;text-decoration:none;margin-right:.5rem">📄 Instruções TXT</a>
+<a href="/download/nexus-apk" class="btn btn-outline mt-1" style="display:inline-block;text-decoration:none;margin-right:.5rem">📱 APK Android</a>
+<a href="/download/nexus-backup-txt" class="btn btn-outline mt-1" style="display:inline-block;text-decoration:none">💾 Backup TXT</a></div>
+<div class="card mt-1"><h3>🔑 API Keys dos Provedores</h3><p class="text-sm text-muted mb-1">Configure suas chaves de API para cada provedor</p><div id="apiKeysForm"><div class="loading"><div class="spinner"></div></div></div><button class="btn mt-1" onclick="saveApiKeys()">💾 Salvar Chaves</button></div>
+<div class="card mt-1"><h3>📋 Sessões Ativas</h3><div id="sessionsList"><div class="loading"><div class="spinner"></div></div></div><button class="btn btn-sm btn-outline mt-1" style="color:var(--error)" onclick="revokeAllSessions()">🔒 Revogar Todas</button></div>
+<div class="card mt-1"><h3>🔑 API Keys Públicas</h3><div id="publicKeysList"><div class="loading"><div class="spinner"></div></div></div><button class="btn btn-sm btn-outline mt-1" onclick="showCreatePubKey()">+ Criar Chave</button></div>
+<div class="card mt-1"><h3>🔒 Segurança</h3><button class="btn btn-outline" onclick="showChangePassword()">Alterar Senha</button></div>
+<div class="card mt-1"><h3>ℹ️ Conta</h3><div id="accountInfo"></div></div>`;
+loadApiKeys();loadSessions();loadPublicKeys();loadAccountInfo();
+}
+async function loadApiKeys(){
+const d=await api('/api/auth/api-keys');const el=document.getElementById('apiKeysForm');
+const providers=['groq','google_gemini','deepseek','mistral','together','openrouter','huggingface','cohere','novita','chutes','siliconflow','aiml','cloudflare_workers_ai','github_copilot','perplexity','ollama_local'];
+const keys=d?.keys||{};
+el.innerHTML=providers.map(p=>`<div class="form-group"><label>${esc(p)}</label><input id="key_${p}" value="${keys[p]||''}" placeholder="${keys[p]?'••••••••':'Sem chave'}"></div>`).join('');
+}
+async function saveApiKeys(){
+const providers=['groq','google_gemini','deepseek','mistral','together','openrouter','huggingface','cohere','novita','chutes','siliconflow','aiml','cloudflare_workers_ai','github_copilot','perplexity','ollama_local'];
+const keys={};providers.forEach(p=>{const v=document.getElementById('key_'+p)?.value;if(v)keys[p]=v});
+const d=await api('/api/auth/api-keys',{method:'PUT',body:JSON.stringify(keys)});
+if(d?.message){toast('Chaves salvas!','success')}else toast(d?.error||'Erro','error');
+}
+async function loadSessions(){
+const d=await api('/api/auth/sessions');const el=document.getElementById('sessionsList');
+if(!d?.sessions?.length){el.innerHTML='<p class="text-muted text-sm">Nenhuma sessão</p>';return}
+el.innerHTML=d.sessions.map(s=>`<div style="padding:.5rem 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><div><span class="text-sm">${esc(s.ip_address||'N/A')} | ${esc(s.user_agent||'').substring(0,40)}</span><br><span class="text-sm text-muted">${s.created_at||''}</span></div><button class="btn btn-sm btn-outline" style="color:var(--error)" onclick="revokeSess(${s.id})">Revogar</button></div>`).join('');
+}
+async function revokeSess(id){await api('/api/auth/sessions/'+id+'/revoke',{method:'POST'});loadSessions();toast('Sessão revogada','success')}
+async function revokeAllSessions(){if(!confirm('Revogar todas as sessões?'))return;await api('/api/auth/sessions/revoke-all',{method:'POST'});loadSessions();toast('Todas revogadas','success')}
+async function loadPublicKeys(){
+const d=await api('/api/public-api-keys');const el=document.getElementById('publicKeysList');
+if(!d?.api_keys?.length){el.innerHTML='<p class="text-sm text-muted">Nenhuma chave pública</p>';return}
+el.innerHTML=d.api_keys.map(k=>`<div style="padding:.5rem 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between"><div><strong>${esc(k.name)}</strong> <span class="tag tag-info">${k.permissions}</span><br><span class="text-sm text-muted">Criada: ${k.created_at||''} ${k.last_used?'| Último uso: '+k.last_used:''}</span></div><button class="btn btn-sm btn-outline" style="color:var(--error)" onclick="delPubKey(${k.id})">🗑️</button></div>`).join('');
+}
+async function showCreatePubKey(){
+openModal(`<h3>Nova Chave API <button class="modal-close" onclick="closeModal()">✕</button></h3>
+<div class="form-group"><label>Nome</label><input id="pubKeyName" placeholder="Minha app"></div>
+<div class="form-group"><label>Permissões</label><select id="pubKeyPerms"><option value="read">Leitura</option><option value="readwrite">Leitura/Escrita</option></select></div>
+<button class="btn btn-full" onclick="createPubKey()">Criar</button>`);
+}
+async function createPubKey(){
+const name=document.getElementById('pubKeyName').value,permissions=document.getElementById('pubKeyPerms').value;
+if(!name){toast('Nome obrigatório','error');return}
+const d=await api('/api/public-api-keys/create',{method:'POST',body:JSON.stringify({name,permissions})});
+if(d?.key){openModal(`<h3>Chave Criada! <button class="modal-close" onclick="closeModal()">✕</button></h3><p class="text-sm text-muted">Guarde esta chave. Ela NÃO será mostrada novamente:</p><div class="result-box mt-1">${esc(d.key)}</div><button class="btn mt-1" onclick="navigator.clipboard.writeText('${esc(d.key)}');toast('Copiado!','success')">📋 Copiar</button>`);loadPublicKeys()}else toast(d?.error||'Erro','error');
+}
+async function delPubKey(id){if(!confirm('Deletar?'))return;await api('/api/public-api-keys/'+id,{method:'DELETE'});loadPublicKeys();toast('Removida','success')}
+function showChangePassword(){
+openModal(`<h3>Alterar Senha <button class="modal-close" onclick="closeModal()">✕</button></h3>
+<div class="form-group"><label>Nova Senha</label><input id="newPass" type="password" placeholder="mínimo 6 caracteres"></div>
+<button class="btn btn-full" onclick="changePassword()">Alterar</button>`);
+}
+async function changePassword(){
+const p=document.getElementById('newPass').value;if(!p||p.length<6){toast('Mínimo 6 caracteres','error');return}
+const d=await api('/api/auth/change-password',{method:'POST',body:JSON.stringify({username:'x',password:p})});
+if(d?.message){toast('Senha alterada. Faça login novamente.','success');closeModal();setTimeout(()=>{localStorage.removeItem('nexus_token');location.reload()},2000)}else toast(d?.error||'Erro','error');
+}
+async function loadAccountInfo(){
+const d=await api('/api/auth/me');const el=document.getElementById('accountInfo');
+if(!d)return;
+el.innerHTML=`<p><strong>Usuário:</strong> ${esc(d.username)}</p><p><strong>Email:</strong> ${esc(d.email)}</p><p><strong>Tarefas:</strong> ${d.total_tasks}</p><p><strong>Tokens:</strong> ${d.total_tokens_used}</p><p><strong>Membro desde:</strong> ${d.created_at||''}</p>`;
+}
+
+function toggleTheme(){
+const html=document.documentElement;const isDark=html.classList.contains('dark');
+html.classList.toggle('dark',!isDark);html.classList.toggle('light',isDark);
+localStorage.setItem('nexus_theme',isDark?'light':'dark');
+if(currentPage)renderPage(currentPage);
+}
+function openModal(html){const o=document.getElementById('modalOverlay');o.querySelector('.modal')?.remove();const m=document.createElement('div');m.className='modal';m.innerHTML=html;o.appendChild(m);o.classList.add('show')}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
+
+(function init(){
+const saved=localStorage.getItem('nexus_theme');
+if(saved==='light'){document.documentElement.classList.remove('dark');document.documentElement.classList.add('light')}
+else if(!saved&&window.matchMedia('(prefers-color-scheme:light)').matches){document.documentElement.classList.remove('dark');document.documentElement.classList.add('light');localStorage.setItem('nexus_theme','light')}
+token=getToken();
+if(!token){document.getElementById('authPage').style.display='flex';document.getElementById('appPage').style.display='none';return}
+api('/api/auth/me').then(d=>{
+if(!d||d.error){localStorage.removeItem('nexus_token');location.reload();return}
+userData=d;document.getElementById('authPage').style.display='none';document.getElementById('appPage').style.display='flex';
+document.getElementById('userName').textContent=d.username;document.getElementById('userEmail').textContent=d.email;
+checkAdmin();
+go('dashboard');
+api('/api/notifications').then(n=>{if(n?.unread>0){const b=document.getElementById('notifBadge');b.textContent=n.unread;b.style.display='inline'}});
+});
+})();
+</script>
+</body>
+</html>

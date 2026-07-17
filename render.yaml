@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: nexusagent-ai
+    runtime: image
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: AGENT_SECRET_KEY
+        sync: false
+      - key: AGENT_CSRF_SECRET
+        sync: false
+    healthCheckPath: /api/health

@@ -1,0 +1,371 @@
+===============================================================
+        NEXUSAGENT AI v3.0 — INSTRUÇÕES COMPLETAS
+===============================================================
+
+📋 ÍNDICE
+--------
+1. O que é o NexusAgent AI
+2. Estrutura do projeto
+3. Como instalar e rodar
+4. Como usar (guia completo)
+5. API Reference
+6. Provedores de IA configurados
+7. Funcionalidades
+8. Solução de problemas
+9. Segurança
+10. Créditos
+
+===============================================================
+1. O QUE É O NEXUSAGENT AI
+===============================================================
+
+O NexusAgent AI é um agente autônomo de programação que integra
+15 provedores de IA gratuitos do mundo. Ele permite:
+
+- Executar tarefas de programação com IA (geração, revisão, etc.)
+- Rodar código em sandbox seguro (Python, JavaScript, Bash)
+- Acessar terminal remoto com restrições de segurança
+- Automatizar navegação na web
+- Criar e gerenciar projetos de software
+- Executar workflows automatizados
+- Gerenciar system prompts personalizados
+- Fazer deploy em plataformas cloud
+- Consultar banco de dados diretamente
+- Exportar resultados em PDF, DOCX e TXT
+- Monitorar tudo em tempo real
+
+===============================================================
+2. ESTRUTURA DO PROJETO
+===============================================================
+
+nexusagent/
+├── backend/
+│   ├── main.py                    # App FastAPI principal
+│   ├── config.py                  # Configurações (API keys, providers)
+│   ├── database.py                # Schema SQLite + funções DB
+│   ├── middleware/
+│   │   └── auth.py                # JWT authentication
+│   ├── routers/
+│   │   ├── auth.py                # Login, registro, sessões
+│   │   ├── tasks.py               # Execução de tarefas IA
+│   │   ├── projects.py            # Gerenciamento de projetos
+│   │   ├── terminal.py            # Terminal remoto
+│   │   ├── sandbox.py             # Sandbox de código
+│   │   ├── browser_routes.py      # Automação de navegador
+│   │   ├── notifications.py       # Sistema de notificações
+│   │   ├── workflows.py           # Workflows automatizados
+│   │   ├── system_prompts.py      # System prompts customizados
+│   │   ├── deployments.py         # Deploy automático
+│   │   ├── db_ops.py              # Operações no banco de dados
+│   │   ├── monitoring.py          # Monitoramento do sistema
+│   │   ├── public_api.py          # API keys públicas
+│   │   └── export.py              # Exportação PDF/DOCX/TXT
+│   ├── services/
+│   │   ├── ai_orchestrator.py     # Orquestrador de IA (15 providers)
+│   │   ├── task_executor.py       # Executor de 18 tipos de tarefa
+│   │   ├── terminal.py            # Service de terminal
+│   │   ├── code_sandbox.py        # Service de sandbox
+│   │   └── browser_auto.py        # Service de navegador
+│   └── engines/
+│       ├── file_processor.py      # Processamento de arquivos
+│       └── code_generator.py      # Geração de código/projetos
+├── frontend/
+│   └── index.html                 # SPA completa (single file)
+├── agent.db                       # Banco de dados SQLite
+├── uploads/                       # Arquivos enviados pelo usuário
+├── outputs/                       # Projetos gerados
+├── start_server_final.py          # Launcher do servidor
+└── start.sh                       # Script de inicialização
+
+===============================================================
+3. COMO INSTALAR E RODAR
+===============================================================
+
+REQUISITOS:
+- Python 3.10+
+- pip (gerenciador de pacotes)
+- Internet (para APIs de IA)
+
+INSTALAÇÃO:
+1. Extraia o arquivo ZIP
+2. Instale as dependências:
+   pip install fastapi uvicorn python-jose[cryptography] aiohttp python-multipart reportlab python-docx
+
+3. Configure as API keys (opcional — Groq e OpenRouter funcionam sem setup):
+   export GROQ_API_KEY="sua-chave-aqui"
+   export OPENROUTER_API_KEY="sua-chave-aqui"
+   export GOOGLE_API_KEY="sua-chave-aqui"
+   export HF_TOKEN="sua-chave-aqui"
+
+4. Inicie o servidor:
+   cd backend
+   python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
+
+5. Acesse no navegador:
+   http://localhost:8000
+
+PARA ACESSO EXTERNO (Cloudflare Tunnel):
+   cloudflared tunnel --url http://localhost:8000
+
+LOGIN PADRÃO:
+   Usuário: admin
+   Senha: admin123
+
+===============================================================
+4. COMO USAR (GUIA COMPLETO)
+===============================================================
+
+DASHBOARD:
+- Visão geral com estatísticas
+- Ações rápidas para tarefas comuns
+- Tarefas recentes
+
+NOVA TAREFA:
+1. Selecione o tipo de tarefa (18 opções)
+2. Descreva o que precisa
+3. Opcionalmente selecione um system prompt
+4. Arraste ou selecione arquivos (opcional)
+5. Clique em "Executar"
+6. A resposta aparece em streaming (letra por letra)
+7. Copie, baixe em PDF/DOCX/TXT
+
+HISTÓRICO:
+- Lista todas as tarefas executadas
+- Clique para ver detalhes e versões
+- Exporte tudo como TXT
+
+TERMINAL:
+- Execute comandos bash
+- Navegue pelos arquivos
+- Edite arquivos diretamente
+- Histórico com setas (↑↓)
+
+SANDBOX:
+- Execute Python, JavaScript ou Bash
+- Veja output e erros em tempo real
+- Timeout de 30 segundos
+
+BROWSER:
+- Navegue em qualquer URL
+- Extraia conteúdo de páginas
+- Busque no DuckDuckGo
+
+PROJETOS:
+- Crie projetos a partir de templates
+- Templates: React, Next.js, Vue, Svelte, Flask, FastAPI, etc.
+
+WORKFLOWS:
+- Crie automações com múltiplos passos
+- Cada passo é uma tarefa IA
+- Execute e veja resultados passo a passo
+
+SYSTEM PROMPTS:
+- Crie prompts personalizados
+- Associe a tipos de tarefa específicos
+- Use ao executar tarefas
+
+DEPLOYS:
+- Conecte projetos a plataformas de deploy
+- Suporta: Vercel, Netlify, Render, Cloudflare Pages
+
+BANCO DE DADOS:
+- Visualize todas as tabelas (14 tabelas)
+- Execute queries SELECT (somente leitura)
+- Navegue pelos dados
+
+MONITORAMENTO:
+- Estatísticas do sistema
+- Eventos de startup/shutdown
+- Saúde dos provedores
+
+NOTIFICAÇÕES:
+- Receba alertas sobre tarefas
+- Marque como lidas
+
+CONFIGURAÇÕES:
+- Toggle Dark/Light mode
+- Configure API keys (15 provedores)
+- Gerencie sessões ativas
+- Crie API keys públicas
+- Altere sua senha
+
+===============================================================
+5. API REFERENCE
+===============================================================
+
+ENDPOINTS DE AUTENTICAÇÃO:
+POST /api/auth/register    - Criar conta
+POST /api/auth/login       - Fazer login
+GET  /api/auth/me          - Dados do usuário
+GET  /api/auth/api-keys    - Ver API keys
+PUT  /api/auth/api-keys    - Salvar API keys
+GET  /api/auth/sessions    - Listar sessões
+POST /api/auth/sessions/{id}/revoke  - Revogar sessão
+POST /api/auth/sessions/revoke-all   - Revogar todas
+POST /api/auth/change-password       - Alterar senha
+
+ENDPOINTS DE TAREFAS:
+POST /api/tasks/create           - Criar tarefa
+POST /api/tasks/execute/{id}     - Executar tarefa
+POST /api/tasks/quick            - Tarefa rápida
+POST /api/tasks/execute-raw      - Executar com upload
+POST /api/tasks/execute-stream   - Executar com streaming (SSE)
+GET  /api/tasks/history          - Histórico
+GET  /api/tasks/{id}/versions    - Versões
+GET  /api/tasks/providers        - Status dos provedores
+GET  /api/tasks/task-types       - Tipos de tarefa
+
+ENDPOINTS DE TERMINAL:
+POST /api/terminal/execute   - Executar comando
+POST /api/terminal/files     - Listar arquivos
+POST /api/terminal/read      - Ler arquivo
+POST /api/terminal/write     - Escrever arquivo
+
+ENDPOINTS DE SANDBOX:
+POST /api/sandbox/execute    - Executar código
+GET  /api/sandbox/languages  - Linguagens disponíveis
+
+ENDPOINTS DE BROWSER:
+POST /api/browser/navigate   - Navegar URL
+POST /api/browser/extract    - Extrair conteúdo
+POST /api/browser/search     - Buscar
+
+ENDPOINTS DE WORKFLOWS:
+GET  /api/workflows                 - Listar
+POST /api/workflows/create          - Criar
+POST /api/workflows/execute/{id}    - Executar
+DELETE /api/workflows/{id}          - Deletar
+
+ENDPOINTS DE SYSTEM PROMPTS:
+GET  /api/system-prompts            - Listar
+POST /api/system-prompts/create     - Criar
+DELETE /api/system-prompts/{id}     - Deletar
+
+ENDPOINTS DE DEPLOY:
+GET  /api/deployments               - Listar
+POST /api/deployments/create        - Criar
+GET  /api/deployments/{id}          - Ver
+
+ENDPOINTS DE DATABASE:
+GET  /api/db/tables                 - Listar tabelas
+POST /api/db/query                  - Executar SELECT
+GET  /api/db/table/{name}           - Ver tabela
+
+ENDPOINTS DE EXPORT:
+GET  /api/export/txt/{id}           - Exportar TXT
+GET  /api/export/pdf/{id}           - Exportar PDF
+GET  /api/export/docx/{id}          - Exportar DOCX
+GET  /api/export/all-txt            - Exportar tudo TXT
+
+ENDPOINTS DE MONITORAMENTO:
+GET  /api/health                    - Health check
+GET  /api/stats                     - Estatísticas
+GET  /api/monitoring/stats          - Stats do sistema
+GET  /api/monitoring                - Eventos
+
+ENDPOINTS DE API PÚBLICA:
+GET  /api/public-api-keys           - Listar chaves
+POST /api/public-api-keys/create    - Criar chave
+DELETE /api/public-api-keys/{id}    - Deletar chave
+
+===============================================================
+6. PROVEDORES DE IA CONFIGURADOS
+===============================================================
+
+1.  Groq         - Llama 3.3, Mixtral (ultra rápido)
+2.  Google Gemini - Gemini 2.0 Flash (rápido, multilingual)
+3.  DeepSeek     - V3/R1 (código, raciocínio)
+4.  Mistral      - Tiny, Small (código, geral)
+5.  Together AI  - Llama 3.3, Qwen (créditos grátis)
+6.  OpenRouter   - Modelos gratuitos variados
+7.  HuggingFace  - Llama, Qwen (inference grátis)
+8.  Cohere       - Command-R (geral)
+9.  Novita AI    - Llama, DeepSeek (créditos grátis)
+10. Chutes AI    - DeepSeek, Llama (grátis)
+11. SiliconFlow  - Qwen, GLM (grátis)
+12. AIML API     - DeepSeek, Mistral (trial grátis)
+13. Cloudflare   - Llama (Workers AI grátis)
+14. GitHub       - GPT-4o-mini, Llama (Models grátis)
+15. Perplexity   - Sonar (pesquisa grátis)
+
+CHAVES JÁ CONFIGURADAS NO SISTEMA:
+- OpenRouter: sk-or-v1-d839...12b6
+- Groq: (configurada via env)
+- Google Gemini: (configurada via env)
+- HuggingFace: (configurada via env)
+
+===============================================================
+7. FUNCIONALIDADES
+===============================================================
+
+✅ 18 tipos de tarefa IA
+✅ 15 provedores com failover automático
+✅ Streaming SSE (resposta letra por letra)
+✅ Sandbox de código (Python, JavaScript, Bash)
+✅ Terminal remoto com restrições
+✅ Automação de navegador
+✅ System prompts personalizados
+✅ Workflows automatizados
+✅ Histórico versionado
+✅ Export PDF, DOCX, TXT
+✅ Database operations (14 tabelas)
+✅ Deploy automático (4 plataformas)
+✅ API pública para apps externos
+✅ Monitoramento em tempo real
+✅ Rate limiting (proteção contra abuso)
+✅ Sessões multi-device
+✅ Dark/Light mode
+✅ Mobile responsive
+✅ Validação de entrada
+✅ Segurança (WAL mode, SSRF block, command blocklist)
+✅ Backup automático do banco
+✅ Cache + compressão GZip
+
+===============================================================
+8. SOLUÇÃO DE PROBLEMAS
+===============================================================
+
+PROBLEMA: "Nenhuma API key configurada"
+SOLUÇÃO: Vá em Configurações e adicione pelo menos uma chave
+(Groq e OpenRouter são gratuitos)
+
+PROBLEMA: Servidor não inicia
+SOLUÇÃO: Verifique se a porta 8000 está livre:
+  lsof -i :8000
+  mate -9 <PID>
+
+PROBLEMA: Token expirado
+SOLUÇÃO: Faça login novamente
+
+PROBLEMA: Streaming não funciona
+SOLUÇÃO: Verifique se o provedor suporta streaming
+(Groq e OpenRouter suportam)
+
+PROBLEMA: Tunnel muda de URL
+SOLUÇÃO: O Cloudflare gratuito gera URLs novas a cada reinício
+Para URL fixa, use um domínio próprio
+
+===============================================================
+9. SEGURANÇA
+===============================================================
+
+- Terminal: blocklist de comandos perigosos
+- Sandbox: execução isolada com timeout
+- Browser: bloqueio de SSRF (IPs privados, metadata endpoints)
+- DB: WAL mode para concorrência
+- Rate limiting em endpoints críticos
+- JWT com expiração de 24 horas
+- Validação de entrada em todos os endpoints
+- Headers de segurança (XSS, CSRF, nosniff)
+- Backup automático do banco de dados
+
+===============================================================
+10. CRÉDICOS
+===============================================================
+
+NexusAgent AI v3.0
+Desenvolvido com FastAPI + SQLite + SPA
+Integração com 15 provedores de IA gratuitos
+Acesso via Cloudflare Tunnel
+
+===============================================================

@@ -1,0 +1,289 @@
+================================================================================
+                    NEXUSAGENT AI - DOCUMENTAÇÃO COMPLETA
+                         Versão 1.0 - Julho 2026
+================================================================================
+
+DATA DE CRIAÇÃO: 16 de Julho de 2026
+STACK: Python 3.12 + FastAPI + SQLite + HTML/CSS/JS SPA
+
+================================================================================
+1. O QUE É O NEXUSAGENT AI
+================================================================================
+
+Agente autônomo de programação com 15 provedores de IA gratuitos configurados.
+Permite: gerar código, criar websites/apps/APKs, analisar arquivos, refatorar,
+corrigir bugs, documentar, testar, deploy, e 13 outras tarefas.
+
+================================================================================
+2. ESTRUTURA DE ARQUIVOS
+================================================================================
+
+/root/agent/
+├── backend/
+│   ├── main.py                    # App FastAPI principal (rotas, frontend)
+│   ├── config.py                  # 15 provedores IA, routing, modelos
+│   ├── database.py                # SQLite DB, auth helpers, CRUD
+│   ├── run_server.py              # Launcher antigo
+│   ├── middleware/
+│   │   └── auth.py                # JWT token creation/verification
+│   ├── routers/
+│   │   ├── auth.py                # Login/Register/API Keys
+│   │   ├── tasks.py               # Task CRUD + execute-raw
+│   │   └── projects.py            # Project CRUD + templates
+│   ├── services/
+│   │   ├── ai_orchestrator.py     # Provider selection, failover, API calls
+│   │   └── task_executor.py       # 18 task type handlers
+│   └── engines/
+│       ├── file_processor.py      # Multi-format file analysis
+│       └── code_generator.py      # 10 project templates + ZIP
+├── frontend/
+│   └── index.html                 # SPA completa (704 linhas)
+├── start_server_final.py          # Launcher recomendado
+├── start永久.sh                   # Start script com tunnel
+├── agent.db                       # Banco de dados SQLite
+├── uploads/                       # Arquivos enviados pelos usuários
+├── outputs/                       # Arquivos gerados pelas tarefas
+└── templates/                     # Templates de código
+
+================================================================================
+3. COMO RODAR (DO ZERO)
+================================================================================
+
+# Instalar dependências
+pip install fastapi uvicorn aiohttp python-multipart python-jose[cryptography] passlib[bcrypt]
+
+# Iniciar servidor
+cd /root/agent/backend
+python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
+
+# Acessar
+Local: http://localhost:8000
+Externo: usar Cloudflare tunnel
+
+# Criar tunnel externo
+cloudflared tunnel --url http://localhost:8000 --no-autoupdate
+
+================================================================================
+4. LOGIN PADRÃO
+================================================================================
+
+Usuário: admin
+Senha: admin123
+
+Para criar outros usuários: POST /api/auth/register
+{
+  "username": "teste",
+  "email": "teste@email.com",
+  "password": "senha123",
+  "full_name": "Nome Completo"
+}
+
+================================================================================
+5. PROVEDORES DE IA CONFIGURADOS (15)
+================================================================================
+
+# COM KEY (OpenRouter - única necessária agora):
+openrouter: sk-or-v1-... (sua key)
+
+# MODELOS FREE DO OPENROUTER (atuais):
+- cohere/north-mini-code:free        ← FUNCIONANDO
+- nvidia/nemotron-nano-9b-v2:free
+- nvidia/nemotron-3-nano-30b-a3b:free
+- openai/gpt-oss-20b:free
+- nvidia/nemotron-3-ultra-550b-a55b:free
+- nousresearch/hermes-3-llama-3.1-405b:free
+- meta-llama/llama-3.3-70b-instruct:free (rate-limited)
+- qwen/qwen3-coder:free (rate-limited)
+- google/gemma-4-31b-it:free (rate-limited)
+
+# SEM KEY (para ativar depois, pegar key em cada site):
+groq         → console.groq.com
+google_gemini → aistudio.google.com/apikey
+deepseek     → platform.deepseek.com/api_keys
+mistral      → console.mistral.ai/api-keys
+together     → api.together.xyz/settings/api-keys
+huggingface  → huggingface.co/settings/tokens
+cohere       → dashboard.cohere.com/api-keys
+novita       → novita.ai
+chutes       → chutes.ai
+siliconflow  → siliconflow.cn
+aiml         → aimlapi.com
+cloudflare   → dash.cloudflare.com
+github       → github.com/settings/tokens
+perplexity   → perplexity.ai/settings/api
+
+================================================================================
+6. 18 TIPOS DE TAREFAS
+================================================================================
+
+1.  code_generation    → Gerar código
+2.  code_review        → Revisar código
+3.  website_creation   → Criar website
+4.  app_creation       → Criar app
+5.  apk_creation       → Criar APK
+6.  file_analysis      → Analisar arquivo
+7.  data_processing    → Processar dados
+8.  code_refactor      → Refatorar código
+9.  bug_fix            → Corrigir bug
+10. api_design         → Projetar API
+11. database_design    → Projetar banco de dados
+12. documentation      → Documentação
+13. testing            → Criar testes
+14. deployment         → Deploy
+15. optimization       → Otimizar
+16. security_review    → Revisão de segurança
+17. ui_design          → UI/UX Design
+18. general_task       → Tarefa geral
+
+================================================================================
+7. ROTAS DA API
+================================================================================
+
+# Auth
+POST /api/auth/register    → Criar conta
+POST /api/auth/login       → Login (retorna JWT)
+GET  /api/auth/me          → Dados do usuário logado
+GET  /api/auth/api-keys    → Listar keys do usuário
+PUT  /api/auth/api-keys    → Salvar keys
+
+# Tasks
+POST /api/tasks/execute-raw → Executar tarefa (com upload de arquivo)
+GET  /api/tasks/history     → Histórico de tarefas
+GET  /api/tasks/{id}        → Detalhe de tarefa
+
+# Projects
+GET  /api/projects          → Listar projetos
+POST /api/projects          → Criar projeto
+GET  /api/projects/templates → Templates disponíveis
+
+# System
+GET  /api/health            → Status do servidor
+GET  /api/stats             → Estatísticas
+
+================================================================================
+8. ENDPOINTS PÚBLICOS (SEM LOGIN)
+================================================================================
+
+GET  /                       → Frontend HTML
+GET  /app                    → Frontend HTML (SPA)
+GET  /docs                   → Swagger docs
+GET  /api/health             → Health check
+GET  /download/projeto-000   → Download ZIP do projeto
+
+================================================================================
+9. BANCO DE DADOS
+================================================================================
+
+Arquivo: /root/agent/agent.db (SQLite)
+
+Tabelas:
+- users (id, username, email, password_hash, api_keys_json, ...)
+- tasks (id, user_id, task_type, prompt, status, result, ...)
+- projects (id, user_id, name, project_type, status, ...)
+- file_uploads (id, user_id, filename, ...)
+- ai_usage_log (id, user_id, provider, model, tokens, ...)
+
+================================================================================
+10. COMO ADICIONAR NOVO PROVEDOR
+================================================================================
+
+1. Abrir /root/agent/backend/config.py
+2. Adicionar entrada em FREE_AI_PROVIDERS:
+   "novo_provedor": {
+       "name": "Nome",
+       "url": "https://api.exemplo.com/chat/completions",
+       "models": ["model-1", "model-2"],
+       "free_tier": True,
+       "speed": "fast",
+       "strengths": ["code", "general"],
+       "api_key_env": "NOVO_API_KEY",
+   }
+3. Adicionar em TASK_ROUTING e COST_OPTIMIZATION_ORDER
+4. Reiniciar servidor
+
+================================================================================
+11. CLOUDFLARE TUNNEL (URL EXTERNA)
+================================================================================
+
+# Instalar cloudflared
+curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64 -o /usr/local/bin/cloudflared
+chmod +x /usr/local/bin/cloudflared
+
+# Criar tunnel (URL muda a cada reinício)
+cloudflared tunnel --url http://localhost:8000 --no-autoupdate
+
+# Para URL permanente: criar conta Cloudflare + named tunnel
+# (mais complexo, requer DNS próprio)
+
+================================================================================
+12. CRON (MANTER RODANDO)
+================================================================================
+
+# Verificar cron atual
+crontab -l
+
+# Configurar auto-restart a cada 5 minutos
+crontab -e
+# Adicionar:
+*/5 * * * * bash /root/agent/start永久.sh >> /root/agent/cron.log 2>&1
+
+================================================================================
+13. DEPENDÊNCIAS PYTHON
+================================================================================
+
+fastapi
+uvicorn[standard]
+aiohttp
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
+sqlite3 (built-in)
+json (built-in)
+os, sys, time, hashlib (built-in)
+
+# Instalar todas:
+pip install fastapi uvicorn[standard] aiohttp python-multipart "python-jose[cryptography]" "passlib[bcrypt]"
+
+================================================================================
+14. BACKUP
+================================================================================
+
+O ZIP atual (NexusAgent-Completo.zip) contém todo o código fonte.
+Para restaurar:
+1. Descompactar em /root/agent/
+2. pip install fastapi uvicorn[standard] aiohttp python-multipart "python-jose[cryptography]" "passlib[bcrypt]"
+3. cd /root/agent/backend && python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
+
+O banco de dados (agent.db) NÃO está no ZIP (segurança).
+Os usuários e API keys precisam ser recriados.
+
+================================================================================
+15. SUAS API KEYS ATUAIS
+================================================================================
+
+openrouter: sk-or-v1-SUA-CHAVE-AQUI
+
+(adicione esta key no campo OpenRouter nas Configurações do site)
+
+================================================================================
+16. SOLUÇÃO DE PROBLEMAS
+================================================================================
+
+# Servidor não inicia:
+- Verificar se porta 8000 está livre: lsof -i :8000
+- Verificar logs: cat /tmp/nexus*.log
+
+# IA não responde:
+- Verificar se tem key configurada (Configurações no site)
+- Testar key: curl -X POST https://openrouter.ai/api/v1/chat/completions \
+  -H "Authorization: Bearer SUA_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"cohere/north-mini-code:free","messages":[{"role":"user","content":"hi"}]}'
+
+# Tunnel não funciona:
+- Reiniciar: pkill cloudflared && cloudflared tunnel --url http://localhost:8000 --no-autoupdate
+- URL muda a cada reinício (limitação do plano gratuito)
+
+================================================================================
+                         FIM DA DOCUMENTAÇÃO
+================================================================================
