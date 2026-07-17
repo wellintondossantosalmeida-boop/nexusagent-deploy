@@ -807,6 +807,15 @@ async function adminForceLogoutAll(){if(!confirm('Forçar logout de TODOS os usu
 async function adminClearAll(){if(!confirm('⚠️ DELETAR TODOS OS DADOS?'))return;if(!confirm('Tem CERTEZA?'))return;const d=await api('/api/admin/clear-all',{method:'POST'});if(d?.message){toast(d.message,'success');loadAdminStats();loadAdminUsers()}else toast(d?.error||'Erro','error')}
 async function adminBackup(){const d=await api('/api/admin/backup',{method:'POST'});if(d?.success){toast('Backup criado!','success')}else toast(d?.error||'Erro','error')}
 
+function downloadBackupTXT(){
+const lines=['================================================================================','                    NEXUSAGENT AI - BACKUP DO PROJETO','                    Data: 2026 | Versao: 3.0.0','================================================================================','','URL: https://nexusagent-ai-vv60.onrender.com','GitHub: https://github.com/wellintondossantosalmeida-boop/nexusagent-deploy','Login: admin / admin123','Email: wellintondossantosalmeida@gmail.com','','=== API KEYS ==='];
+const k=JSON.parse(localStorage.getItem('apiKeys')||'{}');
+for(const[n,v]of Object.entries(k)){if(v)lines.push('  '+n+': '+v)}
+lines.push('','=== PROVEDORES (16) ===','  groq: Groq | openai | llama-3.3-70b-versatile, llama-3.1-8b-instant','  google_gemini: Google Gemini | gemini | gemini-2.0-flash, gemini-1.5-flash','  deepseek: DeepSeek | openai | deepseek-chat, deepseek-reasoner','  mistral: Mistral AI | openai | mistral-tiny, mistral-small-latest','  together: Together AI | openai | Llama-3.3-70B-Instruct-Turbo','  openrouter: OpenRouter | openai | 5 modelos free','  huggingface: HF Router | openai | Llama-3.3-70B-Instruct, Qwen2.5-Coder-32B','  cohere: Cohere | cohere | command-r, command-r-plus','  novita: Novita AI | openai | llama-3.3-70b-instruct','  chutes: Chutes AI | openai | DeepSeek-V3, Llama-3.3-70B-Instruct','  siliconflow: SiliconFlow | openai | Qwen2.5-7B-Instruct','  aiml: AIML API | openai | deepseek-chat, mistral-tiny','  cloudflare_workers_ai: Cloudflare | cloudflare | llama-3.3-70b-fp16','  github_copilot: GitHub Models | openai | gpt-4o-mini, gpt-4o','  perplexity: Perplexity | openai | sonar, sonar-pro','  ollama_local: Ollama | openai | qwen2.5:7b, qwen2.5:3b, qwen2.5:1.5b','','=== TABELAS DB ===','  users, tasks, projects, ai_usage_log, file_uploads, task_versions,','  notifications, workflows, system_prompts, deployments,','  user_sessions, rate_limits, public_api_keys, monitoring','','=== COMO RECRIAR ===','  1. Copie a estrutura de pastas do repo GitHub','  2. Deploy no Render com Dockerfile','  3. Acesse como admin e salve as API keys em Configuracoes','','Para restaurar este chat: opencode import chat-nexusagent-historico.json','','================================================================================'];
+const blob=new Blob([lines.join('\n')],{type:'text/plain'});
+const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='NexusAgent-Backup.txt';a.click();
+toast('Backup TXT baixado!','success')}
+
 function renderSettings(c){
 const isDark=document.documentElement.classList.contains('dark');
 c.innerHTML=`<div class="topbar"><h1>Configurações</h1></div>
@@ -815,7 +824,7 @@ c.innerHTML=`<div class="topbar"><h1>Configurações</h1></div>
 <a href="/download/nexus-zip" class="btn btn-outline mt-1" style="display:inline-block;text-decoration:none;margin-right:.5rem">📥 ZIP Completo</a>
 <a href="/download/nexus-txt" class="btn btn-outline mt-1" style="display:inline-block;text-decoration:none;margin-right:.5rem">📄 Instruções TXT</a>
 <a href="/download/nexus-apk" class="btn btn-outline mt-1" style="display:inline-block;text-decoration:none;margin-right:.5rem">📱 APK Android</a>
-<a href="/download/nexus-backup-txt" class="btn btn-outline mt-1" style="display:inline-block;text-decoration:none">💾 Backup TXT</a></div>
+<button class="btn btn-outline mt-1" onclick="downloadBackupTXT()">💾 Backup TXT</button></div>
 <div class="card mt-1"><h3>🔑 API Keys dos Provedores</h3><p class="text-sm text-muted mb-1">Configure suas chaves de API para cada provedor</p><div id="apiKeysForm"><div class="loading"><div class="spinner"></div></div></div><button class="btn mt-1" onclick="saveApiKeys()">💾 Salvar Chaves</button></div>
 <div class="card mt-1"><h3>📋 Sessões Ativas</h3><div id="sessionsList"><div class="loading"><div class="spinner"></div></div></div><button class="btn btn-sm btn-outline mt-1" style="color:var(--error)" onclick="revokeAllSessions()">🔒 Revogar Todas</button></div>
 <div class="card mt-1"><h3>🔑 API Keys Públicas</h3><div id="publicKeysList"><div class="loading"><div class="spinner"></div></div></div><button class="btn btn-sm btn-outline mt-1" onclick="showCreatePubKey()">+ Criar Chave</button></div>
