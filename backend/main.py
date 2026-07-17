@@ -246,7 +246,6 @@ print(json.dumps({'keys': keys, 'providers': providers, 'stats': stats}))
 @app.get("/", response_class=HTMLResponse)
 @app.get("/app", response_class=HTMLResponse)
 @app.get("/app/{path:path}", response_class=HTMLResponse)
-@app.get("/download/{path:path}", response_class=HTMLResponse)
 def root():
     frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "index.html")
     if not os.path.exists(frontend_path):
